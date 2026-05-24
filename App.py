@@ -206,6 +206,14 @@ def section(title, sub=None):
         st.caption(sub)
 
 
+def pick_col(df, candidates, fallback_prefix="col"):
+    """Trả về tên cột đầu tiên có trong df; nếu không có, tạo cột tạm."""
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
+
+
 # ============================================================
 # TRANG CHỦ
 # ============================================================
@@ -435,15 +443,35 @@ def page_bai3():
     section("📊 Bài 3 — Chỉ số ưu tiên ngành cho 10 ngành Việt Nam",
             "Chuẩn hóa min-max · weighted scoring · phân tích độ nhạy")
     df = SECTORS.copy()
+    # Dò tên cột (tương thích cả file dữ liệu thật lẫn file tự sinh)
+    c_name = pick_col(df, ["sector_name_vi", "sector_name_en", "sector_name", "sector", "name"])
+    c_growth = pick_col(df, ["growth_rate_2024_pct", "growth_rate", "growth"])
+    c_share = pick_col(df, ["gdp_share_2024_pct", "gdp_share", "share"])
+    c_spill = pick_col(df, ["spillover_coef_0_1", "spillover", "spillover_coef"])
+    c_exp = pick_col(df, ["export_billion_USD", "export", "export_billion"])
+    c_labor = pick_col(df, ["labor_million", "labor", "employment_million"])
+    c_ai = pick_col(df, ["ai_readiness_0_100", "ai_readiness", "ai"])
+    c_risk = pick_col(df, ["automation_risk_pct", "automation_risk", "risk"])
+
+    missing = [n for n, c in [("tên ngành", c_name), ("tăng trưởng", c_growth),
+               ("tỷ trọng GDP", c_share), ("lan tỏa", c_spill), ("xuất khẩu", c_exp),
+               ("lao động", c_labor), ("AI readiness", c_ai), ("rủi ro", c_risk)] if c is None]
+    if missing:
+        st.error("File `vietnam_sectors_2024.csv` thiếu cột: " + ", ".join(missing) +
+                 f". Các cột hiện có: {list(df.columns)}")
+        return
+    if c_name is None or df[c_name].dtype.kind in "if":
+        df["_name"] = [f"Ngành {i+1}" for i in range(len(df))]
+        c_name = "_name"
+
     GDP24 = 11511.9
-    df["labor_productivity"] = (df["gdp_share_2024_pct"] / 100) * GDP24 / df["labor_million"]
-    cols_good = ["growth_rate_2024_pct", "labor_productivity", "spillover_coef_0_1",
-                 "export_billion_USD", "labor_million", "ai_readiness_0_100"]
+    df["labor_productivity"] = (df[c_share] / 100) * GDP24 / df[c_labor]
+    cols_good = [c_growth, "labor_productivity", c_spill, c_exp, c_labor, c_ai]
 
     def norm_good(x): return (x - x.min()) / (x.max() - x.min())
     def norm_bad(x): return (x.max() - x) / (x.max() - x.min())
     Xg = df[cols_good].apply(norm_good)
-    Xb = norm_bad(df["automation_risk_pct"])
+    Xb = norm_bad(df[c_risk])
 
     tab0, tab1, tab2, tab3 = st.tabs(["3.4.1 Ma trận chuẩn hóa", "3.4.2 Xếp hạng mặc định",
                                       "3.4.3 Độ nhạy w_AI", "3.4.4 Hai bộ trọng số"])
@@ -451,14 +479,14 @@ def page_bai3():
         st.write("Chuẩn hóa min-max về [0,1]; riêng **Risk** đảo dấu (rủi ro thấp = điểm cao).")
         norm = Xg.copy()
         norm.columns = ["Tăng trưởng", "Năng suất", "Lan tỏa", "Xuất khẩu", "Việc làm", "AI Ready"]
-        norm.insert(0, "Ngành", df["sector_name_vi"].values)
+        norm.insert(0, "Ngành", df[c_name].values)
         norm["Risk (đảo)"] = Xb.values
         st.dataframe(norm.round(4), use_container_width=True, hide_index=True)
     with tab1:
         w_raw = np.array([0.15, 0.15, 0.20, 0.15, 0.10, 0.20]); wr = 0.15
         tot = w_raw.sum() + wr
         pr = Xg.values @ (w_raw / tot) + (wr / tot) * Xb.values
-        rk = pd.DataFrame({"Ngành": df["sector_name_vi"], "Priority": pr.round(4)}) \
+        rk = pd.DataFrame({"Ngành": df[c_name], "Priority": pr.round(4)}) \
             .sort_values("Priority", ascending=False).reset_index(drop=True)
         rk.index += 1
         st.dataframe(rk, use_container_width=True)
@@ -483,13 +511,13 @@ def page_bai3():
                         title="Heatmap Priority theo w_AI")
         st.plotly_chart(fig, use_container_width=True)
         st.caption("N1..N10 = " + ", ".join(f"N{i+1}:{n}" for i, n in
-                   enumerate(df['sector_name_vi'])))
+                   enumerate(df[c_name])))
     with tab3:
         wg = np.array([0.25, 0.25, 0.10, 0.25, 0.05, 0.05]); wg_r = 0.05
         wi = np.array([0.05, 0.10, 0.25, 0.05, 0.25, 0.10]); wi_r = 0.20
         pg = Xg.values @ wg + wg_r * Xb.values
         pi = Xg.values @ wi + wi_r * Xb.values
-        comp = pd.DataFrame({"Ngành": df["sector_name_vi"],
+        comp = pd.DataFrame({"Ngành": df[c_name],
                              "P. Tăng trưởng": pg.round(4), "P. Bao trùm": pi.round(4)})
         c1, c2 = st.columns(2)
         c1.write("**Top-3 Tăng trưởng**")
@@ -522,7 +550,19 @@ BETA_RJ = {
     ('CH', 'I'): 1.20, ('CH', 'D'): 0.75, ('CH', 'AI'): 0.45, ('CH', 'H'): 1.35,
     ('SE', 'I'): 0.90, ('SE', 'D'): 1.30, ('SE', 'AI'): 1.55, ('SE', 'H'): 1.00,
     ('MD', 'I'): 1.10, ('MD', 'D'): 0.85, ('MD', 'AI'): 0.65, ('MD', 'H'): 1.25}
-D0_REG = dict(zip(REG, REGIONS["digital_index_0_100"].values))
+def _reg_col(cands):
+    for c in cands:
+        if c in REGIONS.columns:
+            return c
+    return None
+
+REG_NAME_COL = _reg_col(["region_name_vi", "region_name_en", "region_name", "region", "name"])
+REG_DIGITAL_COL = _reg_col(["digital_index_0_100", "digital_index", "digital"])
+_D0_default = [38, 78, 55, 32, 82, 48]
+if REG_DIGITAL_COL and len(REGIONS) == 6:
+    D0_REG = dict(zip(REG, REGIONS[REG_DIGITAL_COL].values))
+else:
+    D0_REG = dict(zip(REG, _D0_default))
 
 
 def _solve_lp4(with_equity=True):
@@ -693,11 +733,21 @@ def page_bai5():
 # ============================================================
 # BÀI 6 — TOPSIS 6 VÙNG
 # ============================================================
-TOPSIS_CRIT = ['grdp_per_capita_million_VND', 'fdi_registered_billion_USD',
-               'digital_index_0_100', 'ai_readiness_0_100', 'trained_labor_pct',
-               'rd_intensity_pct', 'internet_penetration_pct', 'gini_coef']
-TOPSIS_LBL = ['GRDP/N', 'FDI', 'Digital', 'AI', 'LĐĐT', 'R&D', 'Internet', 'Gini']
-IS_BENEFIT = np.array([True, True, True, True, True, True, True, False])
+TOPSIS_CRIT_CANDS = [
+    (["grdp_per_capita_million_VND", "grdp_per_capita", "grdp"], True),
+    (["fdi_registered_billion_USD", "fdi_registered", "fdi"], True),
+    (["digital_index_0_100", "digital_index", "digital"], True),
+    (["ai_readiness_0_100", "ai_readiness", "ai"], True),
+    (["trained_labor_pct", "trained_labor", "labor_trained"], True),
+    (["rd_intensity_pct", "rd_intensity", "rd"], True),
+    (["internet_penetration_pct", "internet_penetration", "internet"], True),
+    (["gini_coef", "gini"], False),
+]
+TOPSIS_LBL_ALL = ['GRDP/N', 'FDI', 'Digital', 'AI', 'LĐĐT', 'R&D', 'Internet', 'Gini']
+_resolved = [(_reg_col(c), lbl, ben) for (c, ben), lbl in zip(TOPSIS_CRIT_CANDS, TOPSIS_LBL_ALL)]
+TOPSIS_CRIT = [c for c, _, _ in _resolved if c is not None]
+TOPSIS_LBL = [lbl for c, lbl, _ in _resolved if c is not None]
+IS_BENEFIT = np.array([ben for c, _, ben in _resolved if c is not None])
 
 
 def _topsis(X, w, isb):
@@ -722,7 +772,7 @@ def page_bai6():
     section("🏆 Bài 6 — TOPSIS xếp hạng 6 vùng theo ưu tiên đầu tư AI",
             "Chuẩn hóa vector · trọng số chuyên gia vs Entropy")
     X = REGIONS[TOPSIS_CRIT].values.astype(float)
-    rn = REGIONS["region_name_vi"].values
+    rn = REGIONS[REG_NAME_COL].values if REG_NAME_COL else np.array(REGIONS_VI)
     w_exp = np.array([0.10, 0.10, 0.15, 0.20, 0.15, 0.15, 0.05, 0.10])
     C_exp = _topsis(X, w_exp, IS_BENEFIT)
     w_ent = _entropy_w(X)
@@ -1553,7 +1603,7 @@ def page_bai12():
         w_exp = np.array([0.10, 0.10, 0.15, 0.20, 0.15, 0.15, 0.05, 0.10])
         C_exp = _topsis(X, w_exp, IS_BENEFIT)
         C_ent = _topsis(X, _entropy_w(X), IS_BENEFIT)
-        m2 = pd.DataFrame({"Vùng": REGIONS["region_name_vi"],
+        m2 = pd.DataFrame({"Vùng": (REGIONS[REG_NAME_COL] if REG_NAME_COL else REGIONS_VI),
                            "C* Expert": C_exp.round(4), "C* Entropy": C_ent.round(4)})
         fig = go.Figure()
         fig.add_bar(y=m2["Vùng"], x=m2["C* Expert"], name="Expert",
