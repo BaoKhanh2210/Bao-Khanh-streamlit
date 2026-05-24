@@ -29,33 +29,52 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ---- Giao diện (dark, đỏ-hồng giống ảnh mẫu) ----
+# ---- Giao diện (dark, đỏ-hồng giống ảnh mẫu) — CHỮ SÁNG RÕ ----
 st.markdown("""
 <style>
-:root { --vn-red:#ef4444; --vn-pink:#f43f5e; }
-.stApp { background:#0b1220; }
-h1,h2,h3,h4 { color:#f1f5f9; letter-spacing:-.01em; }
+:root { --vn-red:#ef4444; --vn-pink:#f43f5e; --txt:#e8eef7; }
+.stApp { background:#0b1220; color:var(--txt); }
+/* Ép chữ sáng cho mọi thành phần text của Streamlit */
+.stApp, .stApp p, .stApp li, .stApp span, .stApp label,
+.stMarkdown, .stMarkdown p, .stMarkdown li, .stCaption,
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p,
+[data-testid="stText"], div[data-testid="stCaptionContainer"]{
+  color:var(--txt) !important;
+}
+.stApp h1,.stApp h2,.stApp h3,.stApp h4,.stApp h5{
+  color:#ffffff !important; letter-spacing:-.01em;
+}
+/* caption / chú thích nhạt hơn 1 chút nhưng vẫn đọc được */
+.stCaption, div[data-testid="stCaptionContainer"] p{ color:#aebacb !important; }
+/* công thức Latex */
+.katex, .katex *{ color:#f1f5f9 !important; }
+/* bảng dataframe */
+[data-testid="stDataFrame"] *{ color:#e8eef7 !important; }
 .big-red { color:var(--vn-pink); font-weight:800; }
-.kpi-card{
-  background:#111a2e; border:1px solid #1e293b; border-radius:14px;
-  padding:16px 18px; height:100%;
-}
-.kpi-label{ color:#94a3b8; font-size:.82rem; font-weight:600; }
-.kpi-value{ color:var(--vn-pink); font-size:1.8rem; font-weight:800; margin:.15rem 0; }
-.kpi-delta{
-  display:inline-block; background:#0f2a1c; color:#4ade80;
-  border-radius:8px; padding:2px 8px; font-size:.75rem; font-weight:700;
-}
+.kpi-card{ background:#111a2e; border:1px solid #233047; border-radius:14px;
+  padding:16px 18px; height:100%; }
+.kpi-label{ color:#aebacb !important; font-size:.82rem; font-weight:600; }
+.kpi-value{ color:var(--vn-pink) !important; font-size:1.8rem; font-weight:800; margin:.15rem 0; }
+.kpi-delta{ display:inline-block; background:#0f2a1c; color:#5ef08a !important;
+  border-radius:8px; padding:2px 8px; font-size:.75rem; font-weight:700; }
 .lvl-chip{ display:inline-block; padding:3px 10px; border-radius:999px;
-  font-size:.78rem; font-weight:700; margin-right:6px;}
-.note{ background:#0f1b30; border-left:3px solid var(--vn-pink);
-  padding:10px 14px; border-radius:6px; color:#cbd5e1; font-size:.9rem;}
+  font-size:.78rem; font-weight:700; margin-right:6px; }
+.note{ background:#152138; border-left:3px solid var(--vn-pink);
+  padding:10px 14px; border-radius:6px; color:#dbe4f0 !important; font-size:.9rem; }
+.note b{ color:#ffffff !important; }
 [data-testid="stSidebar"]{ background:#0e1626; }
-.sidebar-id{ background:#111a2e; border:1px solid #1e293b; border-radius:10px;
-  padding:10px 12px; font-size:.82rem; color:#cbd5e1; line-height:1.5;}
+[data-testid="stSidebar"] *{ color:#dbe4f0 !important; }
+.sidebar-id{ background:#111a2e; border:1px solid #233047; border-radius:10px;
+  padding:10px 12px; font-size:.82rem; color:#dbe4f0 !important; line-height:1.6; }
+.sidebar-id b{ color:#ffffff !important; }
+/* tab */
 .stTabs [data-baseweb="tab-list"]{ gap:4px; }
-.stTabs [data-baseweb="tab"]{ background:#111a2e; border-radius:8px 8px 0 0;
-  padding:8px 14px; }
+.stTabs [data-baseweb="tab"]{ background:#111a2e; border-radius:8px 8px 0 0; padding:8px 14px; }
+.stTabs [data-baseweb="tab"] p{ color:#cbd5e1 !important; font-weight:600; }
+.stTabs [aria-selected="true"]{ background:#1c2742 !important; }
+.stTabs [aria-selected="true"] p{ color:#ffffff !important; }
+/* slider / radio label sáng */
+.stSlider label, .stRadio label{ color:#e8eef7 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -426,8 +445,15 @@ def page_bai3():
     Xg = df[cols_good].apply(norm_good)
     Xb = norm_bad(df["automation_risk_pct"])
 
-    tab1, tab2, tab3 = st.tabs(["3.4.2 Xếp hạng mặc định",
-                                "3.4.3 Độ nhạy w_AI", "3.4.4 Hai bộ trọng số"])
+    tab0, tab1, tab2, tab3 = st.tabs(["3.4.1 Ma trận chuẩn hóa", "3.4.2 Xếp hạng mặc định",
+                                      "3.4.3 Độ nhạy w_AI", "3.4.4 Hai bộ trọng số"])
+    with tab0:
+        st.write("Chuẩn hóa min-max về [0,1]; riêng **Risk** đảo dấu (rủi ro thấp = điểm cao).")
+        norm = Xg.copy()
+        norm.columns = ["Tăng trưởng", "Năng suất", "Lan tỏa", "Xuất khẩu", "Việc làm", "AI Ready"]
+        norm.insert(0, "Ngành", df["sector_name_vi"].values)
+        norm["Risk (đảo)"] = Xb.values
+        st.dataframe(norm.round(4), use_container_width=True, hide_index=True)
     with tab1:
         w_raw = np.array([0.15, 0.15, 0.20, 0.15, 0.10, 0.20]); wr = 0.15
         tot = w_raw.sum() + wr
@@ -530,7 +556,8 @@ def page_bai4():
     kpi(c2, "Z* (không công bằng)", f"{noeq[1]:,.0f} tỷ")
     kpi(c3, "Chi phí công bằng", f"{noeq[1]-Z:,.0f} tỷ")
 
-    tab1, tab2 = st.tabs(["4.4.1-3 Phân bổ tối ưu", "4.4.4 Chi phí công bằng vùng"])
+    tab1, tabc, tab2 = st.tabs(["4.4.1-3 Phân bổ tối ưu (PuLP)",
+                                "4.4.2 Đối chiếu CVXPY", "4.4.4 Chi phí công bằng vùng"])
     with tab1:
         dfm = pd.DataFrame(x_opt, index=REGIONS_VI, columns=ITEMS).round(0)
         dfm["Tổng"] = dfm.sum(axis=1)
@@ -539,10 +566,34 @@ def page_bai4():
                         color_continuous_scale="YlOrRd", template=PLOT_TMPL,
                         text_auto=".0f", title=f"Heatmap phân bổ tối ưu (Z*={Z:,.0f} tỷ)")
         st.plotly_chart(fig, use_container_width=True)
+    with tabc:
+        try:
+            import cvxpy as cp
+            beta_mat = np.array([[BETA_RJ[(r, j)] for j in ITEMS] for r in REG])
+            xv = cp.Variable((6, 4), nonneg=True)
+            rs = cp.sum(xv, axis=1)
+            cons = [cp.sum(xv) <= 50000, rs >= 5000, rs <= 12000, cp.sum(xv[:, 3]) >= 12000]
+            D0v = np.array([D0_REG[r] for r in REG])
+            Dn = D0v + 0.002 * xv[:, 1]
+            Mc = cp.Variable()
+            cons += [Dn <= Mc, Dn >= 0.6 * Mc]
+            prob = cp.Problem(cp.Maximize(cp.sum(cp.multiply(beta_mat, xv))), cons)
+            for sv in ["CLARABEL", "ECOS", "SCS"]:
+                try:
+                    prob.solve(solver=getattr(cp, sv)); 
+                    if prob.status.startswith("optimal"): break
+                except Exception: continue
+            c1, c2 = st.columns(2)
+            kpi(c1, "Z* PuLP (CBC)", f"{Z:,.0f}")
+            kpi(c2, "Z* CVXPY", f"{prob.value:,.0f}")
+            st.success(f"Chênh lệch PuLP vs CVXPY = {abs(Z - prob.value):.2f} tỷ → "
+                       f"hai solver cho kết quả trùng khớp.")
+            st.dataframe(pd.DataFrame(xv.value, index=REGIONS_VI, columns=ITEMS).round(0),
+                         use_container_width=True)
+        except ImportError:
+            st.warning("Chưa cài CVXPY (`pip install cvxpy`). PuLP Z* = "
+                       f"{Z:,.0f} tỷ — kết quả tham chiếu.")
     with tab2:
-        comp = pd.DataFrame({"Vùng": REGIONS_VI,
-                             "Có công bằng": x_opt.sum(1).round(0),
-                             "Không công bằng": noeq[0].sum(1).round(0)})
         fig = go.Figure()
         fig.add_bar(x=comp["Vùng"], y=comp["Có công bằng"], name="Có công bằng",
                     marker_color="#60a5fa")
@@ -599,8 +650,8 @@ def page_bai5():
         sel = [i for i in P if y[i].value() > 0.5]
         return sel, sum(C[i] for i in sel), value(m.objective), LpStatus[m.status]
 
-    tab1, tab2, tab3 = st.tabs(["5.4.1 Lời giải cơ sở", "5.4.2 Nới ngân sách",
-                                "5.4.4 Lợi ích kỳ vọng (rủi ro)"])
+    tab1, tab2, tabf, tab3 = st.tabs(["5.4.1 Lời giải cơ sở", "5.4.2 Nới ngân sách",
+                                      "5.4.3 Bắt buộc P1+P2", "5.4.4 Lợi ích kỳ vọng"])
     with tab1:
         sel, tc, Z, _ = solve()
         c1, c2, c3 = st.columns(3)
@@ -627,6 +678,16 @@ def page_bai5():
                  (", ".join(f"P{i}" for i in set(sel0) - set(sel4)) or "—"))
         st.write("Được thêm khi tính rủi ro: " +
                  (", ".join(f"P{i}" for i in set(sel4) - set(sel0)) or "—"))
+    with tabf:
+        sel0, _, Z0, _ = solve()
+        sel3, tc3, Z3, stt = solve(force12=True)
+        if stt == "Optimal":
+            st.success(f"Vẫn khả thi · Z* = {Z3:,.0f} tỷ "
+                       f"(giảm {Z0-Z3:,.0f} so với cơ sở do buộc cả P1 và P2)")
+            st.write("Đã chọn: " + ", ".join(f"P{i}" for i in sel3))
+            kpi(st, "Tổng chi phí", f"{tc3:,} tỷ")
+        else:
+            st.error("Bài toán KHÔNG khả thi khi bắt buộc cả P1 và P2.")
 
 
 # ============================================================
@@ -667,8 +728,9 @@ def page_bai6():
     w_ent = _entropy_w(X)
     C_ent = _topsis(X, w_ent, IS_BENEFIT)
 
-    tab1, tab2, tab3 = st.tabs(["6.4.1 Trọng số chuyên gia",
-                                "6.4.2 Entropy vs Expert", "6.4.3 Độ nhạy w_AI"])
+    tab1, tab2, tab3, tab4 = st.tabs(["6.4.1 Trọng số chuyên gia",
+                                      "6.4.2 Entropy vs Expert", "6.4.3 Độ nhạy w_AI",
+                                      "6.4.4 AHP vs TOPSIS"])
     with tab1:
         df = pd.DataFrame({"Vùng": rn, "C*": C_exp.round(4)}) \
             .sort_values("C*", ascending=False).reset_index(drop=True)
@@ -710,6 +772,25 @@ def page_bai6():
                         title="C* theo w_AI (0.10→0.40)")
         st.plotly_chart(fig, use_container_width=True)
         st.caption("V1..V6 = " + ", ".join(f"V{i+1}:{n}" for i, n in enumerate(rn)))
+    with tab4:
+        ahp = np.array([
+            [1, 1, 1/3, 1/5, 1/3, 1/3, 3, 3], [1, 1, 1/3, 1/5, 1/3, 1/3, 3, 3],
+            [3, 3, 1, 1/2, 1, 1, 5, 5], [5, 5, 2, 1, 2, 2, 7, 7],
+            [3, 3, 1, 1/2, 1, 1, 5, 5], [3, 3, 1, 1/2, 1, 1, 5, 5],
+            [1/3, 1/3, 1/5, 1/7, 1/5, 1/5, 1, 1], [1/3, 1/3, 1/5, 1/7, 1/5, 1/5, 1, 1]])
+        n = 8
+        gm = np.prod(ahp, axis=1) ** (1 / n)
+        w_ahp = gm / gm.sum()
+        lam = np.mean((ahp @ w_ahp) / w_ahp)
+        CI = (lam - n) / (n - 1); CR = CI / 1.41
+        C_ahp = _topsis(X, w_ahp, IS_BENEFIT)
+        st.write(f"**Kiểm tra nhất quán:** λ_max={lam:.3f}, CI={CI:.3f}, "
+                 f"**CR={CR:.3f}** ({'✅ nhất quán' if CR < 0.10 else '⚠️ chưa nhất quán'})")
+        cmp = pd.DataFrame({"Vùng": rn, "Expert": C_exp.round(4),
+                            "Entropy": C_ent.round(4), "AHP": C_ahp.round(4)})
+        st.dataframe(cmp, use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame({"Tiêu chí": TOPSIS_LBL, "AHP w": w_ahp.round(4)}),
+                     use_container_width=True, hide_index=True)
 
 
 # ============================================================
@@ -794,7 +875,8 @@ def page_bai7():
     kpi(c2, "GDP gain (thỏa hiệp)", f"{-F[best,0]:,.0f} tỷ")
     kpi(c3, "GDP gain (max)", f"{-F[mg,0]:,.0f} tỷ")
 
-    tab1, tab2 = st.tabs(["7.4.2 Biên Pareto", "7.4.3-4 Nghiệm thỏa hiệp"])
+    tab1, tabp, tab2 = st.tabs(["7.4.2 Biên Pareto 3D", "Parallel coordinates",
+                                "7.4.3-4 Nghiệm thỏa hiệp"])
     with tab1:
         fig = go.Figure(go.Scatter3d(
             x=-F[:, 0], y=F[:, 1], z=F[:, 2], mode="markers",
@@ -808,8 +890,22 @@ def page_bai7():
                                      zaxis_title="Phát thải"),
                           title="Tập Pareto 3D (màu = rủi ro an ninh)")
         st.plotly_chart(fig, use_container_width=True)
+    with tabp:
+        fn = np.copy(F).astype(float)
+        for i in range(4):
+            lo, hi = F[:, i].min(), F[:, i].max()
+            fn[:, i] = (F[:, i] - lo) / (hi - lo) if hi > lo else 0.5
+        figp = go.Figure(go.Parcoords(
+            line=dict(color=fn[:, 0], colorscale="Plasma"),
+            dimensions=[
+                dict(label="GDP gain (↓min)", values=fn[:, 0]),
+                dict(label="Gini (↓min)", values=fn[:, 1]),
+                dict(label="Phát thải (↓min)", values=fn[:, 2]),
+                dict(label="Rủi ro (↓min)", values=fn[:, 3])]))
+        figp.update_layout(template=PLOT_TMPL, height=460,
+                           title="Parallel coordinates — 4 mục tiêu (chuẩn hóa [0,1])")
+        st.plotly_chart(figp, use_container_width=True)
     with tab2:
-        bX = X[best].reshape(6, 4)
         dfm = pd.DataFrame(bX, index=REGIONS_VI, columns=ITEMS).round(0)
         dfm["Tổng"] = dfm.sum(1)
         st.write("**Phân bổ nghiệm thỏa hiệp (TOPSIS, w=0.40/0.25/0.20/0.15):**")
@@ -837,12 +933,14 @@ def _run_dynamic():
     A0 = Y0 / (K0**a * L0**b * D0**g * AI0**d * H0**th)
     L = np.array([L0 * 1.009**t for t in range(T + 1)])
 
-    def traj(u):
+    def traj(u, shock_year=None, shock_pct=0.0):
         IK, ID, IAI, IH = u[0::4], u[1::4], u[2::4], u[3::4]
         K = np.zeros(T + 1); D = np.zeros(T + 1); AI = np.zeros(T + 1)
         H = np.zeros(T + 1); A = np.zeros(T + 1); Y = np.zeros(T + 1); C = np.zeros(T)
         K[0], D[0], AI[0], H[0], A[0] = K0, D0, AI0, H0, A0
         for t in range(T):
+            if shock_year is not None and t == shock_year:
+                A[t] *= (1 - shock_pct)
             Y[t] = A[t] * K[t]**a * L[t]**b * D[t]**g * AI[t]**d * H[t]**th
             C[t] = Y[t] - IK[t] - ID[t] - IAI[t] - IH[t]
             if C[t] <= 0: return None
@@ -854,8 +952,8 @@ def _run_dynamic():
         Y[T] = A[T] * K[T]**a * L[T]**b * D[T]**g * AI[T]**d * H[T]**th
         return K, D, AI, H, Y, C, A
 
-    def welfare(u):
-        r = traj(u)
+    def welfare(u, sy=None, sp=0.0):
+        r = traj(u, sy, sp)
         if r is None or np.any(r[5] <= 0): return 1e15
         C = r[5]
         return -sum(rho**t * (C[t]**(1 - gcr) - 1) / (1 - gcr) for t in range(T))
@@ -863,44 +961,107 @@ def _run_dynamic():
     ti = 14000 * 0.15
     u0 = np.tile([ti * 0.40, ti * 0.25, ti * 0.20, ti * 0.15], T)
 
-    def cons(u):
-        r = traj(u)
-        return -1e10 if r is None else min(r[5]) - 1
+    def cons_factory(sy=None, sp=0.0):
+        def cons(u):
+            r = traj(u, sy, sp)
+            return -1e10 if r is None else min(r[5]) - 1
+        return cons
 
     res = minimize(welfare, u0, method='SLSQP', bounds=[(0, None)] * (T * 4),
-                   constraints=[{'type': 'ineq', 'fun': cons}],
+                   constraints=[{'type': 'ineq', 'fun': cons_factory()}],
                    options={'maxiter': 600, 'ftol': 1e-8})
-    return traj(res.x), -res.fun
+
+    # 8.3.3 — sốc TFP 8% năm 2028 (t=2): giữ kế hoạch vs tái tối ưu
+    W_base = -welfare(res.x)
+    W_plan = -welfare(res.x, 2, 0.08)
+    res_sh = minimize(lambda u: welfare(u, 2, 0.08), res.x, method='SLSQP',
+                      bounds=[(0, None)] * (T * 4),
+                      constraints=[{'type': 'ineq', 'fun': cons_factory(2, 0.08)}],
+                      options={'maxiter': 600, 'ftol': 1e-8})
+    W_reopt = -res_sh.fun
+    Y_base = traj(res.x)[4]
+    Y_shock = traj(res.x, 2, 0.08)[4]
+    Y_reopt = traj(res_sh.x, 2, 0.08)[4]
+
+    # 8.3.4 — đầu tư đều vs front-load
+    u_even = u0.copy()
+    u_front = np.zeros(T * 4)
+    for t in range(T):
+        f = 1.5 if t < 3 else 0.7
+        u_front[t * 4:(t + 1) * 4] = np.array([ti * 0.40, ti * 0.25, ti * 0.20, ti * 0.15]) * f
+    W_even, W_front = -welfare(u_even), -welfare(u_front)
+    Y_even, Y_front = traj(u_even)[4], traj(u_front)[4]
+
+    return {"opt": traj(res.x), "W": -res.fun,
+            "shock": dict(W_base=W_base, W_plan=W_plan, W_reopt=W_reopt,
+                          Y_base=Y_base, Y_shock=Y_shock, Y_reopt=Y_reopt),
+            "strat": dict(W_opt=-res.fun, W_even=W_even, W_front=W_front,
+                          Y_opt=traj(res.x)[4], Y_even=Y_even, Y_front=Y_front)}
 
 
 def page_bai8():
     section("⏳ Bài 8 — Tối ưu động phân bổ liên thời gian 2026-2035",
             "Quỹ đạo tối ưu K, D, AI, H, Y, C · SLSQP · hàm thỏa dụng CRRA")
     with st.spinner("Đang tối ưu quỹ đạo 10 năm (SLSQP)..."):
-        (K, D, AI, H, Y, C, A), W = _run_dynamic()
+        out = _run_dynamic()
+    (K, D, AI, H, Y, C, A) = out["opt"]; W = out["W"]
     years = list(range(2026, 2037))
     c1, c2, c3 = st.columns(3)
     kpi(c1, "Phúc lợi W*", f"{W:.2f}")
     kpi(c2, "GDP 2035", f"{Y[-1]:,.0f} ng.tỷ")
     kpi(c3, "Tăng trưởng BQ", f"{((Y[-1]/Y[0])**(1/10)-1)*100:.2f}%/năm")
 
-    fig = make_subplots(rows=2, cols=3, subplot_titles=(
-        "K (vốn vật chất)", "D (hạ tầng số %)", "AI (nghìn DN)",
-        "H (nhân lực %)", "Y & C", "A (TFP)"))
-    series = [(K, 1, 1, "#60a5fa"), (D, 1, 2, "#22d3ee"), (AI, 1, 3, "#a78bfa"),
-              (H, 2, 1, "#fb923c"), (A, 2, 3, "#4ade80")]
-    for s, r, c, col in series:
-        fig.add_trace(go.Scatter(x=years, y=s, mode="lines+markers",
-                                 line_color=col, showlegend=False), row=r, col=c)
-    fig.add_trace(go.Scatter(x=years, y=Y, name="Y", line_color="#f1f5f9"), row=2, col=2)
-    fig.add_trace(go.Scatter(x=years[:10], y=C, name="C", line_color="#22d3ee"), row=2, col=2)
-    fig.update_layout(template=PLOT_TMPL, height=620,
-                      title="Quỹ đạo tối ưu 2026-2035")
-    st.plotly_chart(fig, use_container_width=True)
-    st.markdown('<div class="note"><b>Thảo luận:</b> Quỹ đạo có xu hướng <b>front-load</b> đầu tư '
-                'AI & H giai đoạn đầu để tích lũy năng lực hấp thụ, sau đó tiêu dùng tăng dần. '
-                'Đào tạo nhân lực (H) nên đi trước/đồng thời với đầu tư AI.</div>',
-                unsafe_allow_html=True)
+    tab1, tab3, tab4 = st.tabs(["8.3.1-2 Quỹ đạo tối ưu",
+                                "8.3.3 Phân tích cú sốc 2028", "8.3.4 So sánh chiến lược"])
+    with tab1:
+        fig = make_subplots(rows=2, cols=3, subplot_titles=(
+            "K (vốn vật chất)", "D (hạ tầng số %)", "AI (nghìn DN)",
+            "H (nhân lực %)", "Y & C", "A (TFP)"))
+        series = [(K, 1, 1, "#60a5fa"), (D, 1, 2, "#22d3ee"), (AI, 1, 3, "#a78bfa"),
+                  (H, 2, 1, "#fb923c"), (A, 2, 3, "#4ade80")]
+        for s, r, c, col in series:
+            fig.add_trace(go.Scatter(x=years, y=s, mode="lines+markers",
+                                     line_color=col, showlegend=False), row=r, col=c)
+        fig.add_trace(go.Scatter(x=years, y=Y, name="Y", line_color="#f1f5f9"), row=2, col=2)
+        fig.add_trace(go.Scatter(x=years[:10], y=C, name="C", line_color="#22d3ee"), row=2, col=2)
+        fig.update_layout(template=PLOT_TMPL, height=620, title="Quỹ đạo tối ưu 2026-2035")
+        st.plotly_chart(fig, use_container_width=True)
+        st.markdown('<div class="note"><b>Thảo luận:</b> Quỹ đạo <b>front-load</b> đầu tư AI & H '
+                    'giai đoạn đầu để tích lũy năng lực hấp thụ. Đào tạo nhân lực (H) nên đi '
+                    'trước/đồng thời với đầu tư AI.</div>', unsafe_allow_html=True)
+    with tab3:
+        sh = out["shock"]
+        cc = st.columns(3)
+        kpi(cc[0], "W không sốc", f"{sh['W_base']:.2f}")
+        kpi(cc[1], "W giữ kế hoạch", f"{sh['W_plan']:.2f}")
+        kpi(cc[2], "W tái tối ưu", f"{sh['W_reopt']:.2f}")
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=years, y=sh["Y_base"], name="Không sốc",
+                                 line_color="#4ade80"))
+        fig.add_trace(go.Scatter(x=years, y=sh["Y_shock"], name="Có sốc (giữ KH)",
+                                 line_color="#f87171"))
+        fig.add_trace(go.Scatter(x=years, y=sh["Y_reopt"], name="Có sốc (tái tối ưu)",
+                                 line_color="#fbbf24", line=dict(dash="dot")))
+        fig.add_vline(x=2028, line_dash="dash", line_color="#94a3b8")
+        fig.update_layout(template=PLOT_TMPL, title="Cú sốc TFP -8% năm 2028 (như bão Yagi)",
+                          xaxis_title="Năm", yaxis_title="GDP (ng.tỷ)")
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption("Sốc TFP persistent kéo dài qua động học A[t+1]=A[t]·(1+growth). "
+                   "Tái tối ưu giúp phục hồi một phần phúc lợi.")
+    with tab4:
+        s = out["strat"]
+        df = pd.DataFrame({
+            "Chiến lược": ["Tối ưu (SLSQP)", "Đầu tư đều", "Front-load"],
+            "Phúc lợi W": [round(s["W_opt"], 2), round(s["W_even"], 2), round(s["W_front"], 2)],
+            "GDP 2035": [round(s["Y_opt"][-1]), round(s["Y_even"][-1]), round(s["Y_front"][-1])]})
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=years, y=s["Y_opt"], name="Tối ưu", line_color="#f43f5e"))
+        fig.add_trace(go.Scatter(x=years, y=s["Y_even"], name="Đều", line_color="#60a5fa"))
+        fig.add_trace(go.Scatter(x=years, y=s["Y_front"], name="Front-load", line_color="#fb923c"))
+        fig.update_layout(template=PLOT_TMPL, title="So sánh quỹ đạo GDP theo chiến lược",
+                          xaxis_title="Năm", yaxis_title="GDP (ng.tỷ)")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # ============================================================
@@ -945,7 +1106,9 @@ def page_bai9():
     kpi(c1c, "Tổng NetJob ròng", f"{-res.fun:,.0f} việc")
     kpi(c2c, "Ngân sách dùng", f"{xA.sum()+xH.sum():,.0f} / 30.000 tỷ")
 
-    tab1, tab2 = st.tabs(["9.4.1 Phân bổ & NetJob", "9.4.4 Ràng buộc displaced ≤ 5%L"])
+    tab1, tab2s, tab3s, tab2 = st.tabs(["9.4.1 Phân bổ & NetJob",
+                                        "9.4.2 Ngưỡng đào tạo", "9.4.3 Luồng lao động (Sankey)",
+                                        "9.4.4 Ràng buộc displaced ≤ 5%L"])
     with tab1:
         df = pd.DataFrame({"Ngành": sec, "x_AI": xA.round(0), "x_H": xH.round(0),
                            "Displaced": Displaced.round(0), "NetJob": NetJob.round(0)})
@@ -953,6 +1116,51 @@ def page_bai9():
         fig = px.bar(df, x="Ngành", y="NetJob", template=PLOT_TMPL,
                      color="NetJob", color_continuous_scale="Greens",
                      title="NetJob ròng theo ngành")
+        st.plotly_chart(fig, use_container_width=True)
+    with tab2s:
+        i = 1  # CN chế biến
+        net = a1[i] - c1[i] * risk[i]
+        rr = c1[i] * risk[i] / d1[i]
+        st.write(f"**Ngành CN chế biến chế tạo:** hệ số net AI = {net:.1f}, "
+                 f"tỷ lệ retrain = c₁·risk/d₁ = **{rr:.3f}**.")
+        st.write(f"Ràng buộc: Displaced ≤ RetrainCapacity → x_H ≥ {rr:.3f}·x_AI. "
+                 f"Mỗi 1 tỷ đầu tư AI cần ≈ {rr:.3f} tỷ đào tạo.")
+        xr = np.linspace(0, 30000, 100)
+        xh_re = rr * xr
+        xh_nj = np.maximum(0, -net / b1[i] * xr)
+        xh_min = np.maximum(xh_re, xh_nj)
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=xr, y=xh_re, name="Ngưỡng retrain", line_color="#f87171"))
+        fig.add_trace(go.Scatter(x=xr, y=xh_nj, name="Ngưỡng NetJob≥0", line_color="#60a5fa"))
+        fig.add_trace(go.Scatter(x=xr, y=xh_min, name="Khả thi (≥)", fill="tonexty",
+                                 line_color="#4ade80", opacity=0.3))
+        fig.update_layout(template=PLOT_TMPL, xaxis_title="x_AI (tỷ)",
+                          yaxis_title="x_H tối thiểu (tỷ)",
+                          title="Ngưỡng đào tạo tối thiểu — CN chế biến")
+        st.plotly_chart(fig, use_container_width=True)
+    with tab3s:
+        vuln = [0, 2, 3]  # Nông-LT, Xây dựng, Bán buôn
+        RetrainCap = d1 * xH
+        labels, src, tgt, val, colr = [], [], [], [], []
+        for k in vuln:
+            labels.append(sec[k])
+        labels += ["Giữ việc", "Đào tạo lại", "Mất việc"]
+        for idx, k in enumerate(vuln):
+            disp = Displaced[k]
+            retr = min(disp, RetrainCap[k])
+            lost = max(0, disp - retr)
+            kept = L[k] * 1e6 - disp
+            for tnode, v, col in [(len(vuln), kept, "#4ade80"),
+                                  (len(vuln) + 1, retr, "#fbbf24"),
+                                  (len(vuln) + 2, lost, "#f87171")]:
+                if v > 0:
+                    src.append(idx); tgt.append(tnode); val.append(v); colr.append(col)
+        fig = go.Figure(go.Sankey(
+            node=dict(label=labels, pad=18, thickness=18,
+                      color=["#60a5fa"] * len(vuln) + ["#4ade80", "#fbbf24", "#f87171"]),
+            link=dict(source=src, target=tgt, value=val, color=colr)))
+        fig.update_layout(template=PLOT_TMPL, height=420,
+                          title="Luồng dịch chuyển lao động nhóm dễ tổn thương")
         st.plotly_chart(fig, use_container_width=True)
     with tab2:
         res4 = solve(cap5=True)
@@ -1035,13 +1243,37 @@ def _solve_sp():
         r = linprog(cs, A_ub=np.array(Aub), b_ub=np.array(bub),
                     bounds=[(0, None)] * 4, method="highs")
         Z_ev += P_S[s] * (-r.fun)
-    return x_sp, y_sp, Z_sp, Z_ev, Z_ws, det
+    # 10.5.4 — Robust (minimax regret): min w, s.t. Z*[s]-(beta*x+beta_s*y_s)<=w
+    # biến: [x(4), y_s1..s4(16), w] = 21
+    nr = 21
+    cr = np.zeros(nr); cr[20] = 1.0
+    Ar = []; br = []
+    rowb = [0] * nr
+    for k in range(4): rowb[k] = 1
+    Ar.append(rowb); br.append(65000)                      # budget1
+    for si in range(4):
+        row = [0] * nr
+        for k in range(4): row[4 + si * 4 + k] = 1
+        Ar.append(row); br.append(15000)                   # budget2
+    for si in range(4):
+        row = [0] * nr; row[3] = -0.5; row[4 + si * 4 + 2] = 1
+        Ar.append(row); br.append(0)                       # y_AI<=0.5 x_H
+    for si, s in enumerate(S10):                            # regret <= w
+        row = [0] * nr
+        for k, j in enumerate(J10):
+            row[k] = -BETA_BASE[j]; row[4 + si * 4 + k] = -BETA_S[(s, j)]
+        row[20] = -1
+        Ar.append(row); br.append(-det[s]["Z"])
+    rr = linprog(cr, A_ub=np.array(Ar), b_ub=np.array(br),
+                 bounds=[(0, None)] * 20 + [(None, None)], method="highs")
+    x_rob = rr.x[:4]; w_rob = rr.x[20]
+    return x_sp, y_sp, Z_sp, Z_ev, Z_ws, det, x_rob, w_rob
 
 
 def page_bai10():
     section("🎲 Bài 10 — Quy hoạch ngẫu nhiên hai giai đoạn",
             "First-stage (here-and-now) + recourse · VSS & EVPI · 4 kịch bản")
-    x_sp, y_sp, Z_sp, Z_ev, Z_ws, det = _solve_sp()
+    x_sp, y_sp, Z_sp, Z_ev, Z_ws, det, x_rob, w_rob = _solve_sp()
     VSS = Z_sp - Z_ev
     EVPI = Z_ws - Z_sp
 
@@ -1051,7 +1283,9 @@ def page_bai10():
     kpi(c[2], "VSS", f"{VSS:,.0f}")
     kpi(c[3], "EVPI", f"{EVPI:,.0f}")
 
-    tab1, tab2 = st.tabs(["10.5.1 First & second stage", "10.5.2-3 Kịch bản · VSS · EVPI"])
+    tab1, tab2, tabr = st.tabs(["10.5.1 First & second stage",
+                                "10.5.2-3 Kịch bản · VSS · EVPI",
+                                "10.5.4 Robust (minimax regret)"])
     with tab1:
         st.write("**First-stage (here-and-now), tổng ≤ 65.000:**")
         st.dataframe(pd.DataFrame({"Hạng mục": J10, "x*": x_sp.round(0)}),
@@ -1074,6 +1308,20 @@ def page_bai10():
                     f'định khi ra quyết định. <b>EVPI = {EVPI:,.0f}</b>: giá trị thông tin hoàn '
                     f'hảo. SP đầu tư H (nhân lực) nhiều hơn EV — H là "hàng hóa bảo hiểm" giúp '
                     f'hấp thụ cú sốc.</div>', unsafe_allow_html=True)
+    with tabr:
+        st.write("Tối ưu robust cực tiểu hóa **regret kịch bản xấu nhất**: "
+                 "min w, s.t. Z*[s] − Z(x,s) ≤ w ∀s.")
+        kpi(st, "Minimax regret", f"{w_rob:,.0f}")
+        cmp = pd.DataFrame({"Hạng mục": J10,
+                            "x* Stochastic": x_sp.round(0),
+                            "x* Robust": x_rob.round(0)})
+        st.dataframe(cmp, use_container_width=True, hide_index=True)
+        fig = go.Figure()
+        fig.add_bar(x=J10, y=x_sp, name="Stochastic", marker_color="#60a5fa")
+        fig.add_bar(x=J10, y=x_rob, name="Robust", marker_color="#fb923c")
+        fig.update_layout(template=PLOT_TMPL, barmode="group",
+                          title="First-stage: Stochastic vs Robust")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 # ============================================================
@@ -1154,7 +1402,44 @@ def page_bai11():
         Q, hist = _train_q()
     env = VietnamEconomyEnv()
 
-    tab1, tab2 = st.tabs(["11.3.3 Chính sách π*", "11.3.4 So sánh & learning curve"])
+    tab01, tab02, tab1, tab2 = st.tabs(
+        ["11.3.1 Môi trường MDP", "11.3.2 Huấn luyện Q-learning",
+         "11.3.3 Chính sách π*", "11.3.4 So sánh & learning curve"])
+    with tab01:
+        c1, c2 = st.columns(2)
+        c1.markdown("**Không gian trạng thái** (3⁴ = 81):")
+        c1.dataframe(pd.DataFrame({
+            "Yếu tố": ["GDP growth", "Digital index", "AI capacity", "Unemploy risk"],
+            "low (0)": ["<3%", "<25", "<100 ng.DN", "<35% H"],
+            "med (1)": ["3-6%", "25-35", "100-200", "35-50%"],
+            "high (2)": [">6%", ">35", ">200", ">50%"]}),
+            hide_index=True, use_container_width=True)
+        c2.markdown("**Không gian hành động** (5 lựa chọn % K/D/AI/H):")
+        c2.dataframe(pd.DataFrame({
+            "Hành động": env.action_names,
+            "K": [70, 40, 25, 20, 30], "D": [10, 25, 45, 20, 20],
+            "AI": [10, 15, 15, 45, 10], "H": [10, 20, 15, 15, 40]}),
+            hide_index=True, use_container_width=True)
+        st.markdown('<div class="note"><b>Phần thưởng:</b> R = 0.40·ΔGDP − 0.25·ΔUnemploy '
+                    '− 0.20·CyberRisk − 0.15·Emission. Chuyển trạng thái mô phỏng bằng hàm sản '
+                    'xuất Cobb-Douglas đã calibrate. Mỗi episode = 10 năm (T=10).</div>',
+                    unsafe_allow_html=True)
+    with tab02:
+        c = st.columns(4)
+        kpi(c[0], "Learning rate α", "0,10")
+        kpi(c[1], "Discount γ", "0,95")
+        kpi(c[2], "Episodes", "8.000")
+        kpi(c[3], "Epsilon", "1,0 → 0,05")
+        st.write("**Cập nhật Q-table** (Bellman, ε-greedy giảm dần):")
+        st.latex(r"Q(s,a) \leftarrow Q(s,a) + \alpha\,[\,r + \gamma \max_{a'}Q(s',a') - Q(s,a)\,]")
+        w = 200
+        sm = np.convolve(hist, np.ones(w) / w, mode="valid")
+        fig = px.line(x=list(range(len(sm))), y=sm, template=PLOT_TMPL,
+                      labels={"x": "Episode", "y": "Tổng phúc lợi (TB trượt 200)"},
+                      title="Hội tụ phần thưởng trong quá trình huấn luyện")
+        fig.update_traces(line_color="#22d3ee")
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption(f"Q-table shape {Q.shape} · Q_max sau huấn luyện = {Q.max():.3f}")
     with tab1:
         tests = [([1, 1, 0, 1], "VN 2026 thực tế (GDP_med, D_med, AI_low, H_med)"),
                  ([0, 0, 0, 2], "Kịch bản tệ (GDP_low, D_low, AI_low, H_high)"),
@@ -1341,7 +1626,7 @@ def page_bai12():
         st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("#### M5 — Đánh giá rủi ro (Stochastic theo kịch bản)")
-        _, _, Z_sp, Z_ev, Z_ws, det = _solve_sp()
+        _, _, Z_sp, Z_ev, Z_ws, det, _, _ = _solve_sp()
         c1, c2, c3 = st.columns(3)
         kpi(c1, "Z* Stochastic", f"{Z_sp:,.0f}")
         kpi(c2, "VSS", f"{Z_sp - Z_ev:,.0f}")
