@@ -1,21 +1,24 @@
-# AIDEOM-VN · Analytics Terminal
+# AIDEOM-VN — Mô hình ra quyết định phát triển kinh tế Việt Nam
 
-Nội dung & số liệu của bộ 12 bài tập Mô hình ra quyết định, trình bày theo phong
-cách **command-center tối** với accent neon: mục lục **sidebar bên trái**, lưới nền
-kỹ thuật và phông Space Grotesk / JetBrains Mono. Mặc định nền tối, có nút ☀/☾ để
-chuyển sáng/tối.
+**Họ và tên:** Nguyễn Bảo Khánh · **Mã sinh viên:** 23051266
+**Bài tập lớn:** Các mô hình ra quyết định
 
 ## Chạy
 ```bash
-cd aideom_terminal
-python -m http.server 5000        # cách 1: không cần cài gì
-# hoặc
-pip install -r requirements.txt && python app.py   # cách 2: Flask
+pip install -r requirements.txt
+streamlit run app.py
 ```
-Mở http://127.0.0.1:5000 — hoặc nhấp đúp `index.html`.
+App tự sinh 3 file CSV dữ liệu VN 2020-2025 nếu chưa có, nên chạy được ngay.
+(Nếu có file CSV gốc, đặt cùng thư mục để dùng số liệu thật.)
 
-## Điều hướng
-Trang chủ `#home`, từng bài `#bai1` … `#bai12`.
+## Cấu trúc
+- **Trang chủ** — KPI 2025, 12 bài theo 4 cấp độ, dữ liệu gốc (vĩ mô / 10 ngành / 6 vùng)
+- **Bài 1-11** — mỗi bài là 1 trang, lời giải mô hình + biểu đồ Plotly
+- **Bài 12** — AIDEOM-VN tích hợp 6 module chia thành **4 tab**:
+  - Tổng quan (M1 Cobb-Douglas + M2 TOPSIS)
+  - Phân bổ (M3 LP ngành-vùng)
+  - 5 Kịch bản (M6 so sánh GDP 2030)
+  - Cảnh báo rủi ro (M4 lao động + M5 Stochastic)
 
-Mọi tính toán & biểu đồ chạy bằng JavaScript trong trình duyệt (Chart.js + KaTeX
-qua CDN), không cần backend. Deploy: chỉ cần `index.html`.
+Nội dung tính toán bám sát notebook `bai_tap_cuoi_ki.ipynb`.
+
