@@ -502,9 +502,16 @@ def pick_col(df, candidates):
 
 
 def _plot_cfg(title="", h=None):
+    """For fig.update_layout(**_plot_cfg(...))"""
     cfg = dict(template=PLOT_TMPL, title=title,
                paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-               font_family="Be Vietnam Pro", font_color="#a8bbd4")
+               font=dict(family="Be Vietnam Pro", color="#a8bbd4"))
+    if h: cfg["height"] = h
+    return cfg
+
+def _px_cfg(title="", h=None):
+    """For px.xxx(..., **_px_cfg(...)) — only px-compatible keys"""
+    cfg = dict(template=PLOT_TMPL, title=title)
     if h: cfg["height"] = h
     return cfg
 
@@ -699,9 +706,8 @@ def page_home():
     t1,t2,t3 = st.tabs(["📊 Vĩ mô 2020-2025","🏭 10 ngành 2024","🗺️ 6 vùng KT-XH 2024"])
     with t1:
         st.dataframe(MACRO, use_container_width=True)
-        fig = px.area(MACRO,x="year",y="GDP_trillion_VND",
-                      color_discrete_sequence=["#e63946"],
-                      **_plot_cfg("GDP Việt Nam 2020–2025 (nghìn tỷ VND)"))
+        fig = px.line(MACRO,x="year",y="GDP_trillion_VND",
+                      **_px_cfg("GDP Việt Nam 2020–2025 (nghìn tỷ VND)"))
         fig.update_traces(fill="tozeroy", line_color="#e63946",
                           fillcolor="rgba(230,57,70,0.15)")
         st.plotly_chart(fig,use_container_width=True)
@@ -800,7 +806,7 @@ def page_bai1():
         st.dataframe(dec,use_container_width=True,hide_index=True)
         fig = px.bar(dec,x="Đóng góp (%/năm)",y="Yếu tố",orientation="h",
                      color="Đóng góp (%/năm)",color_continuous_scale=["#2ec4b6","#e63946"],
-                     **_plot_cfg("Phân rã đóng góp tăng trưởng GDP 2020-2025 (điểm %/năm)"))
+                     **_px_cfg("Phân rã đóng góp tăng trưởng GDP 2020-2025 (điểm %/năm)"))
         fig.update_layout(yaxis=dict(autorange="reversed"),showlegend=False)
         st.plotly_chart(fig,use_container_width=True)
         info_box(f"<b>Nhận xét:</b> Vốn vật chất (K) đóng góp lớn nhất ({gs['Vốn (K)']*100:.2f}%/năm), nhưng đóng góp của Số hóa + AI + Nhân lực số chiếm {(gs['Số hóa (D)']+gs['AI capacity']+gs['Nhân lực số (H)'])*100:.2f}%/năm — xu hướng tốt cho mô hình tăng trưởng chất lượng cao.")
@@ -922,7 +928,8 @@ def page_bai2():
         budgets_sp = [100,101,102]
         sp_vals = [-solve(B=b).fun for b in budgets_sp]
         sp_val = sp_vals[1]-sp_vals[0]
-        kpi_row([(st.columns(2)[0],"Shadow price (ngân sách +1 ng.tỷ)",f"{sp_val:.4f} ng.tỷ GDP")])
+        c_sp1, c_sp2 = st.columns(2)
+        kpi_row([(c_sp1, "Shadow price (ngân sách +1 ng.tỷ)", f"{sp_val:.4f} ng.tỷ GDP")])
         st.markdown("**Giải thích:** Mỗi 1 nghìn tỷ VND ngân sách thêm → GDP tăng thêm kỳ vọng ≈ "
                     f"**{sp_val*1000:,.0f} tỷ VND** — đây là chi phí cơ hội của vốn công ngành số.")
 
@@ -995,7 +1002,7 @@ def page_bai3():
         fig = px.imshow(norm.iloc[:,1:].values,y=df[c_name].values,
                         x=["Tăng trưởng","Năng suất","Lan tỏa","XK","LĐ","AI","Risk↓"],
                         color_continuous_scale="RdYlGn",aspect="auto",
-                        **_plot_cfg("Heatmap ma trận chuẩn hóa 10 ngành"))
+                        **_px_cfg("Heatmap ma trận chuẩn hóa 10 ngành"))
         st.plotly_chart(fig,use_container_width=True)
 
     with tab1:
@@ -1011,7 +1018,7 @@ def page_bai3():
         with cols[1]:
             fig = px.bar(rk,x="Priority",y="Ngành",orientation="h",
                          color="Priority",color_continuous_scale=["#1e3050","#e63946"],
-                         **_plot_cfg("Xếp hạng ưu tiên 10 ngành (bộ trọng số mặc định)"))
+                         **_px_cfg("Xếp hạng ưu tiên 10 ngành (bộ trọng số mặc định)"))
             fig.update_layout(yaxis=dict(autorange="reversed"),showlegend=False)
             st.plotly_chart(fig,use_container_width=True)
         top3 = rk.head(3)["Ngành"].tolist()
@@ -1027,7 +1034,7 @@ def page_bai3():
         fig = px.imshow(heat,x=[f"N{i+1}" for i in range(10)],
                         y=[f"{w:.2f}" for w in rng_vals],aspect="auto",
                         color_continuous_scale="YlOrRd",
-                        **_plot_cfg("Heatmap Priority theo w_AI (0.05→0.40)"))
+                        **_px_cfg("Heatmap Priority theo w_AI (0.05→0.40)"))
         fig.update_layout(xaxis_title="Ngành",yaxis_title="Trọng số w_AI")
         st.plotly_chart(fig,use_container_width=True)
         st.caption("N1..N10 = "+", ".join(f"N{i+1}:{n}" for i,n in enumerate(df[c_name])))
@@ -1089,7 +1096,7 @@ def page_bai4():
         st.dataframe(dfm,use_container_width=True)
         fig = px.imshow(x_opt,x=ITEMS,y=REGIONS_VI,aspect="auto",text_auto=".0f",
                         color_continuous_scale="Blues",
-                        **_plot_cfg(f"Heatmap phân bổ tối ưu (Z* = {Z:,.0f} tỷ VND)"))
+                        **_px_cfg(f"Heatmap phân bổ tối ưu (Z* = {Z:,.0f} tỷ VND)"))
         st.plotly_chart(fig,use_container_width=True)
         per_region = x_opt.sum(axis=1)
         fig2 = go.Figure()
@@ -1208,7 +1215,7 @@ def page_bai5():
         fig = px.scatter(all_df,x="Chi phí",y="NPV",text="Mã",color="Được chọn",
                          color_discrete_map={"✅":"#2ec4b6","❌":"#5e7a99"},
                          size_max=20,
-                         **_plot_cfg("Ma trận Chi phí vs NPV của 15 dự án"))
+                         **_px_cfg("Ma trận Chi phí vs NPV của 15 dự án"))
         fig.update_traces(textposition="top center",marker_size=12)
         st.plotly_chart(fig,use_container_width=True)
         info_box("<b>Nhận xét:</b> P13 (Khu CN bán dẫn) có NPV cao nhất (35.000 tỷ) nhưng cũng chi phí lớn nhất (20.000 tỷ). P15 (Open Data) có B/C tốt nhưng bị loại do ràng buộc tổng dự án ≤11.")
@@ -1279,7 +1286,7 @@ def page_bai6():
         with cc[1]:
             fig = px.bar(df_t.sort_values("C* Score"),x="C* Score",y="Vùng",orientation="h",
                          color="C* Score",color_continuous_scale=["#1e3050","#e63946"],
-                         **_plot_cfg("TOPSIS Score — Trọng số chuyên gia (w_AI=0.20)"))
+                         **_px_cfg("TOPSIS Score — Trọng số chuyên gia (w_AI=0.20)"))
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig,use_container_width=True)
         best_vung = df_t.iloc[0]["Vùng"]
@@ -1311,7 +1318,7 @@ def page_bai6():
         fig = px.imshow(heat,x=[f"V{i+1}" for i in range(6)],
                         y=[f"{w:.2f}" for w in rng],text_auto=".3f",aspect="auto",
                         color_continuous_scale="RdYlGn",
-                        **_plot_cfg("C* Score theo w_AI — phân tích độ nhạy"))
+                        **_px_cfg("C* Score theo w_AI — phân tích độ nhạy"))
         fig.update_layout(xaxis_title="Vùng (V1..V6)",yaxis_title="Trọng số w_AI")
         st.plotly_chart(fig,use_container_width=True)
         st.caption("V1..V6 = "+", ".join(f"V{i+1}:{n}" for i,n in enumerate(rn)))
@@ -1650,7 +1657,7 @@ def page_bai9():
                      use_container_width=True,hide_index=True)
         fig=px.bar(df,x="Ngành",y="NetJob",color="NetJob",
                    color_continuous_scale=["#e63946","#f4a261","#2ec4b6"],
-                   **_plot_cfg("NetJob ròng theo ngành — đầu tư tối ưu 30.000 tỷ"))
+                   **_px_cfg("NetJob ròng theo ngành — đầu tư tối ưu 30.000 tỷ"))
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig,use_container_width=True)
 
@@ -1754,7 +1761,7 @@ def page_bai10():
         with cc[1]:
             fig=px.bar(scn,x="Kịch bản",y="Z*[s] (tỷ)",color="Kịch bản",
                        color_discrete_sequence=["#2ec4b6","#4895ef","#f4a261","#e63946"],
-                       **_plot_cfg("Z* tối ưu theo từng kịch bản (deterministic)"))
+                       **_px_cfg("Z* tối ưu theo từng kịch bản (deterministic)"))
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig,use_container_width=True)
 
@@ -1925,7 +1932,7 @@ def page_bai11():
         with cc[1]:
             fig=px.bar(dfp,x="Chính sách",y="Phúc lợi BQ",color="Chính sách",
                        color_discrete_sequence=["#e63946","#4895ef","#2ec4b6","#5e7a99"],
-                       error_y="Std Dev",**_plot_cfg("So sánh các chính sách"))
+                       error_y="Std Dev",**_px_cfg("So sánh các chính sách"))
             fig.update_layout(showlegend=False)
             st.plotly_chart(fig,use_container_width=True)
         warn_box("Lưu ý quan trọng (Mục 11 bài báo): <b>AI hỗ trợ ra quyết định, KHÔNG thay thế trách nhiệm chính trị-xã hội.</b> π* chỉ minh họa kỹ thuật học chính sách thích nghi — quyết định cuối thuộc về nhà hoạch định chính sách.")
@@ -2005,7 +2012,7 @@ def page_bai12():
                           "Đóng góp (%/năm)":[v*100 for v in gs.values()]})
         fig=px.bar(dec,x="Yếu tố",y="Đóng góp (%/năm)",
                    color="Đóng góp (%/năm)",color_continuous_scale=["#1e3050","#e63946"],
-                   **_plot_cfg("Phân rã đóng góp tăng trưởng GDP 2020-2025"))
+                   **_px_cfg("Phân rã đóng góp tăng trưởng GDP 2020-2025"))
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig,use_container_width=True)
 
@@ -2026,10 +2033,11 @@ def page_bai12():
     with t2:
         section_header("🗺️","M3 — Tối ưu phân bổ ngành-vùng (LP, có ràng buộc công bằng C5)")
         x_opt,Z_lp=_solve_lp4(True)
-        kpi_row([(st.columns(1)[0],"LP Z* GDP gain",f"{Z_lp:,.0f} tỷ VND")])
+        _c12, _c13 = st.columns(2)
+        kpi_row([(_c12, "LP Z* GDP gain", f"{Z_lp:,.0f} tỷ VND")])
         fig=px.imshow(x_opt,x=ITEMS,y=REGIONS_VI,aspect="auto",text_auto=".0f",
                       color_continuous_scale="Blues",
-                      **_plot_cfg(f"Phân bổ tối ưu 6 vùng × 4 hạng mục (Z*={Z_lp:,.0f} tỷ)"))
+                      **_px_cfg(f"Phân bổ tối ưu 6 vùng × 4 hạng mục (Z*={Z_lp:,.0f} tỷ)"))
         st.plotly_chart(fig,use_container_width=True)
         tot=x_opt.sum()
         info_box(f"Tỷ lệ: I={x_opt[:,0].sum()/tot*100:.1f}% · D={x_opt[:,1].sum()/tot*100:.1f}% · "
@@ -2073,10 +2081,11 @@ def page_bai12():
                     b_ub=np.concatenate([[30000],np.zeros(N_s),np.zeros(N_s)]),
                     bounds=[(0,None)]*(2*N_s),method="highs")
         NJ=coeff*res.x[:N_s]+b1*res.x[N_s:]
-        kpi_row([(st.columns(1)[0],"Tổng NetJob ròng",f"{-res.fun:,.0f} việc")])
+        _cj1, _cj2 = st.columns(2)
+        kpi_row([(_cj1, "Tổng NetJob ròng", f"{-res.fun:,.0f} việc")])
         fig=px.bar(x=sec_s,y=NJ.round(0),color=NJ,
                    color_continuous_scale=["#e63946","#f4a261","#2ec4b6"],
-                   **_plot_cfg("NetJob ròng theo ngành — tối ưu 30.000 tỷ"))
+                   **_px_cfg("NetJob ròng theo ngành — tối ưu 30.000 tỷ"))
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig,use_container_width=True)
 
@@ -2091,7 +2100,7 @@ def page_bai12():
                           "Z*[s] (tỷ)":[round(det[s]["Z"],0) for s in S10]})
         fig=px.bar(scn,x="Kịch bản",y="Z*[s] (tỷ)",color="Kịch bản",
                    color_discrete_sequence=["#2ec4b6","#4895ef","#f4a261","#e63946"],
-                   **_plot_cfg(f"Z* theo kịch bản · Z*_SP = {Z_sp:,.0f} tỷ"))
+                   **_px_cfg(f"Z* theo kịch bản · Z*_SP = {Z_sp:,.0f} tỷ"))
         fig.update_layout(showlegend=False)
         st.plotly_chart(fig,use_container_width=True)
         info_box("""<b>Khuyến nghị tích hợp:</b> Kịch bản <b>S5 (cân bằng)</b> cho GDP 2030 cao nhất trong khi
