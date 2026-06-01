@@ -514,11 +514,25 @@ section[data-testid="stSidebar"] .stButton button:focus {
 with st.sidebar:
     st.markdown("""
     <div style='padding:16px 0 10px;'>
-      <div style='font-size:1.25rem;font-weight:900;color:#fff;letter-spacing:-.02em;'>
-        &#9776;&nbsp; AIDEOM<span style='color:#e63946;'>-VN</span>
+      <div style='display:flex;align-items:center;gap:10px;'>
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none"
+             xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+          <rect y="0"  width="22" height="2.5" rx="1.25" fill="#4895ef"/>
+          <rect y="6"  width="16" height="2.5" rx="1.25" fill="#2ec4b6"/>
+          <rect y="12" width="19" height="2.5" rx="1.25" fill="#4895ef"/>
+        </svg>
+        <div style='font-size:1.2rem;font-weight:900;letter-spacing:-.02em;
+             background:linear-gradient(90deg,#4895ef,#2ec4b6);
+             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+             background-clip:text;'>
+          AIDEOM<span style='
+             background:linear-gradient(90deg,#e63946,#f4a261);
+             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+             background-clip:text;'>-VN</span>
+        </div>
       </div>
-      <div style='font-size:.7rem;color:#5e7a99;margin-top:3px;font-weight:500;
-           text-transform:uppercase;letter-spacing:.08em;'>
+      <div style='font-size:.68rem;color:#4895ef;margin-top:5px;font-weight:600;
+           text-transform:uppercase;letter-spacing:.1em;opacity:.7;'>
         Decision Optimization Model
       </div>
     </div>
