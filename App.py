@@ -132,18 +132,44 @@ html, body, .stApp {
 .stSlider [data-baseweb="slider"] { color: var(--accent-cyn) !important; }
 
 /* ─── EXPANDER ──────────────────────────── */
-.streamlit-expanderHeader {
+.streamlit-expanderHeader,
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] > details > summary {
   background: var(--bg-panel) !important;
   border-radius: var(--radius) !important;
   color: var(--txt-hi) !important;
   font-weight: 600 !important;
   border: 1px solid var(--border) !important;
+  padding: 12px 16px !important;
 }
-.streamlit-expanderContent {
+.streamlit-expanderContent,
+[data-testid="stExpander"] > details > div {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
   border-top: none !important;
+  border-radius: 0 0 var(--radius) var(--radius) !important;
 }
+/* Fix expander arrow — prevent it from overlapping text/emoji */
+[data-testid="stExpander"] summary svg {
+  flex-shrink: 0 !important;
+  color: var(--txt-md) !important;
+}
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span,
+.streamlit-expanderHeader p {
+  color: var(--txt-hi) !important;
+  font-weight: 600 !important;
+}
+
+/* ─── LEVEL EXPANDERS ─────────────────── */
+/* Color the expander title text to match level */
+[data-testid="stExpander"] summary p {
+  font-size: .95rem !important;
+  letter-spacing: .02em !important;
+}
+/* Remove any ::before pseudo-elements that clash */
+.streamlit-expanderHeader *::before,
+.streamlit-expanderHeader *::after { content: none !important; }
 
 /* ─── SUCCESS / ERROR / WARNING ─────────── */
 [data-testid="stAlert"] { border-radius: var(--radius) !important; }
@@ -685,17 +711,25 @@ def page_home():
     ]
 
     for emoji, lvl_name, color, items in levels:
-        with st.expander(f"{emoji}  **{lvl_name}**", expanded=(color=="#16a34a")):
+        # Use st.expander with plain text title (no emoji = no arrow overlap bug)
+        label = f"[ {lvl_name} ]"
+        with st.expander(label, expanded=(color=="#16a34a")):
             cols = st.columns(3)
-            for i, (code, title, desc, tools) in enumerate(items):
+            for i, (bai_code, title, desc, tools) in enumerate(items):
                 with cols[i]:
                     st.markdown(f"""
                     <div style='background:var(--bg-panel);border:1px solid var(--border);
-                         border-top:3px solid {color};border-radius:var(--radius);padding:14px 16px;height:100%;'>
-                      <span class='lvl-chip' style='background:{color}22;color:{color};margin-bottom:8px;display:inline-block;'>{code}</span>
-                      <div style='font-size:.95rem;font-weight:700;color:#fff;margin-bottom:6px;'>{title}</div>
+                         border-top:3px solid {color};border-radius:var(--radius);
+                         padding:14px 16px;height:100%;'>
+                      <span style='display:inline-block;background:{color}22;color:{color};
+                            border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:700;
+                            letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;'>
+                        {bai_code}
+                      </span>
+                      <div style='font-size:.93rem;font-weight:700;color:#fff;margin-bottom:6px;'>{title}</div>
                       <div style='font-size:.8rem;color:var(--txt-md);margin-bottom:10px;line-height:1.5;'>{desc}</div>
-                      <div style='font-size:.72rem;color:var(--txt-lo);font-family:"JetBrains Mono",monospace;'>{tools}</div>
+                      <div style='font-size:.72rem;color:var(--accent-cyn);
+                            font-family:"JetBrains Mono",monospace;opacity:.8;'>{tools}</div>
                     </div>""", unsafe_allow_html=True)
             st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
@@ -986,9 +1020,19 @@ def page_bai3():
     GDP24 = 11511.9
     df["labor_productivity"] = (df[c_share]/100)*GDP24/df[c_lab]
     cols_good = [c_growth,"labor_productivity",c_spill,c_exp,c_lab,c_ai]
+    # cols_good has 6 columns: [growth, productivity, spillover, export, labor, ai_readiness]
+    # Index of AI readiness in cols_good = 5
     def norm_g(x): return (x-x.min())/(x.max()-x.min())
     def norm_b(x): return (x.max()-x)/(x.max()-x.min())
     Xg = df[cols_good].apply(norm_g); Xb = norm_b(df[c_risk])
+
+    # Default weights: 6 "good" weights + 1 risk weight
+    # w_raw[5] = AI readiness weight = 0.20
+    w_raw = np.array([0.15, 0.15, 0.20, 0.15, 0.10, 0.20])  # length 6
+    wr    = 0.15   # risk weight
+    # Normalize so all weights sum to 1
+    w_default = w_raw / (w_raw.sum() + wr)
+    wr_default = wr / (w_raw.sum() + wr)
 
     tab0,tab1,tab2,tab3 = st.tabs(["🔢 3.4.1 Ma trận chuẩn hóa","🏅 3.4.2 Xếp hạng mặc định",
                                     "🌡️ 3.4.3 Độ nhạy w_AI","⚖️ 3.4.4 Hai bộ trọng số"])
@@ -1006,9 +1050,7 @@ def page_bai3():
         st.plotly_chart(fig,use_container_width=True)
 
     with tab1:
-        w_raw = np.array([0.15,0.15,0.20,0.15,0.10,0.20]); wr=0.15
-        tot = w_raw.sum()+wr
-        pr = Xg.values@(w_raw/tot)+(wr/tot)*Xb.values
+        pr = Xg.values @ w_default + wr_default * Xb.values
         rk = pd.DataFrame({"Hạng":range(1,11),"Ngành":df[c_name],"Priority":pr.round(4)}) \
                .sort_values("Priority",ascending=False).reset_index(drop=True)
         rk["Hạng"] = range(1,11)
@@ -1025,11 +1067,21 @@ def page_bai3():
         info_box(f"<b>Top-3 ưu tiên:</b> {' · '.join(top3)} — phù hợp với Nghị quyết 57-NQ/TW về đột phá KH-CN và chuyển đổi số.")
 
     with tab2:
-        rng_vals = np.arange(0.05,0.45,0.05)
+        # Sensitivity: vary w_AI (weight of AI readiness, index 5 in cols_good)
+        # Keep wr (risk) fixed, redistribute remaining weight among other 5 cols
+        rng_vals = np.arange(0.05, 0.45, 0.05)
         heat = []
+        w_others = w_raw[:5]  # first 5 weights (exclude AI readiness)
         for wai in rng_vals:
-            rem=1-wai-wr; wsc=w_raw*(rem/w_raw.sum())
-            heat.append(Xg.values@np.append(wsc,wai)+wr*Xb.values)
+            rem = 1.0 - wai - wr          # remaining for other 5 cols + risk already taken
+            # Scale the 5 non-AI weights proportionally
+            wsc = w_others * (rem / w_others.sum())  # shape (5,)
+            w_full = np.append(wsc, wai)             # shape (6,) — matches Xg columns
+            # Normalize full weight vector (including risk) to sum=1
+            total = w_full.sum() + wr
+            w_full_n = w_full / total
+            wr_n = wr / total
+            heat.append(Xg.values @ w_full_n + wr_n * Xb.values)
         heat = np.array(heat)
         fig = px.imshow(heat,x=[f"N{i+1}" for i in range(10)],
                         y=[f"{w:.2f}" for w in rng_vals],aspect="auto",
@@ -1310,9 +1362,15 @@ def page_bai6():
 
     with tab3:
         rng = np.arange(0.10,0.45,0.05); heat = []
+        w_gini_fixed = 0.10
         for wai in rng:
-            rem=1-wai-0.10; wb=np.array([0.10,0.10,0.15,0.15,0.15,0.05])
-            wsc=wb*(rem/wb.sum()); wfull=np.insert(wsc,3,wai); wfull=np.append(wfull,0.10)
+            # 8 criteria: GRDP,FDI,Digital,AI(vary),Labor,R&D,Internet,Gini(fixed)
+            wb = np.array([0.10,0.10,0.15,0.15,0.15,0.05])  # 6 non-AI non-Gini
+            rem = 1.0 - wai - w_gini_fixed
+            wsc = wb * (rem / wb.sum())
+            # Full 8-element: indices 0-2=wsc[:3], 3=wai, 4-6=wsc[3:], 7=gini
+            wfull = np.concatenate([wsc[:3], [wai], wsc[3:], [w_gini_fixed]])
+            wfull = wfull / wfull.sum()  # ensure sums to 1
             heat.append(_topsis(X,wfull,IS_BENEFIT))
         heat=np.array(heat)
         fig = px.imshow(heat,x=[f"V{i+1}" for i in range(6)],
