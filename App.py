@@ -184,6 +184,23 @@ html, body, .stApp {
   padding: 16px !important;
 }
 
+/* ─── HOME PAGE NAV BUTTONS ─────────────── */
+div[data-testid="stVerticalBlock"] .stButton button {
+  background: transparent !important;
+  border: 1px solid #1e3050 !important;
+  border-radius: 8px !important;
+  color: #a8bbd4 !important;
+  font-size: .78rem !important;
+  font-weight: 600 !important;
+  padding: 5px 10px !important;
+  transition: all .15s !important;
+}
+div[data-testid="stVerticalBlock"] .stButton button:hover {
+  border-color: #e63946 !important;
+  color: #fff !important;
+  background: rgba(230,57,70,.1) !important;
+}
+
 /* ─── SUCCESS / ERROR / WARNING ─────────── */
 [data-testid="stAlert"] { border-radius: var(--radius) !important; }
 [data-testid="stAlert"] * { color: inherit !important; }
@@ -434,7 +451,7 @@ H_HIST  = np.array([24.1,26.1,26.2,27.0,28.4,29.2])
 COEF    = dict(alpha=0.33, beta=0.42, gamma=0.10, delta=0.08, theta=0.07)
 
 # ============================================================
-# SIDEBAR
+# SESSION STATE — NAVIGATION
 # ============================================================
 PAGES = [
     "🏠 Trang chủ",
@@ -452,26 +469,90 @@ PAGES = [
     "🇻🇳 Bài 12 — AIDEOM tích hợp",
 ]
 
+if "page_idx" not in st.session_state:
+    st.session_state.page_idx = 0
+
+def _nav(idx):
+    st.session_state.page_idx = idx
+
+# ── CSS cho sidebar buttons ──────────────────────────────────
+st.markdown("""
+<style>
+section[data-testid="stSidebar"] .stButton button {
+  width: 100% !important;
+  text-align: left !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 7px 12px !important;
+  font-size: .84rem !important;
+  font-weight: 500 !important;
+  color: #a8bbd4 !important;
+  cursor: pointer !important;
+  transition: background .15s, color .15s !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+section[data-testid="stSidebar"] .stButton button:hover {
+  background: #162240 !important;
+  color: #fff !important;
+}
+section[data-testid="stSidebar"] .stButton button:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+.sidebar-active button {
+  background: #1e3050 !important;
+  color: #fff !important;
+  border-left: 3px solid #e63946 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("""
-    <div style='padding:16px 0 8px;'>
-      <div style='font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-.02em;
-           display:flex;align-items:center;gap:8px;'>
-        <span style='display:inline-flex;align-items:center;justify-content:center;
-              width:28px;height:28px;background:#e63946;border-radius:6px;
-              font-size:.85rem;flex-shrink:0;'>VN</span>
-        AIDEOM<span style='color:#e63946;'>-VN</span>
+    <div style='padding:16px 0 10px;'>
+      <div style='font-size:1.25rem;font-weight:900;color:#fff;letter-spacing:-.02em;'>
+        &#9776;&nbsp; AIDEOM<span style='color:#e63946;'>-VN</span>
       </div>
-      <div style='font-size:.72rem;color:#5e7a99;margin-top:3px;font-weight:500;
+      <div style='font-size:.7rem;color:#5e7a99;margin-top:3px;font-weight:500;
            text-transform:uppercase;letter-spacing:.08em;'>
         Decision Optimization Model
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    page = st.radio("", PAGES, label_visibility="collapsed")
+    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
-    st.markdown("<hr style='border-color:#1e3050;margin:14px 0;'>", unsafe_allow_html=True)
+    _icons = ["🏠","📐","💰","🎯","🗺","🔢","🏆","🌐","⏳","👷","🎲","🤖","🇻🇳"]
+    _labels = [
+        "Trang chủ",
+        "Bài 1 — Cobb-Douglas + AI",
+        "Bài 2 — LP Ngân sách số",
+        "Bài 3 — Chỉ số ưu tiên ngành",
+        "Bài 4 — LP ngành-vùng",
+        "Bài 5 — MIP 15 dự án",
+        "Bài 6 — TOPSIS 6 vùng",
+        "Bài 7 — NSGA-II Pareto",
+        "Bài 8 — Tối ưu động",
+        "Bài 9 — Lao động & AI",
+        "Bài 10 — Quy hoạch ngẫu nhiên",
+        "Bài 11 — Q-learning RL",
+        "Bài 12 — AIDEOM tích hợp",
+    ]
+    for _i, (_ic, _lb) in enumerate(zip(_icons, _labels)):
+        _active = st.session_state.page_idx == _i
+        _wrap_open  = "<div class='sidebar-active'>" if _active else "<div>"
+        _wrap_close = "</div>"
+        st.markdown(_wrap_open, unsafe_allow_html=True)
+        if st.button(f"{_ic}  {_lb}", key=f"nav_{_i}"):
+            _nav(_i)
+            st.rerun()
+        st.markdown(_wrap_close, unsafe_allow_html=True)
+
+    st.markdown("<hr style='border-color:#1e3050;margin:12px 0;'>", unsafe_allow_html=True)
     st.markdown("""
     <div class='id-card'>
       <b>Họ và tên:</b> Nguyễn Bảo Khánh<br>
@@ -480,7 +561,9 @@ with st.sidebar:
       <b>Trường:</b> UEB — VNU
     </div>
     """, unsafe_allow_html=True)
-    st.markdown("<div style='font-size:.72rem;color:#5e7a99;margin-top:10px;'>Nguồn dữ liệu: NSO · MoST · MIC · MPI · WB · GII 2025</div>", unsafe_allow_html=True)
+    st.markdown("<div style='font-size:.7rem;color:#5e7a99;margin-top:8px;'>NSO · MoST · MIC · MPI · WB · GII 2025</div>", unsafe_allow_html=True)
+
+page = PAGES[st.session_state.page_idx]
 
 
 # ============================================================
@@ -704,56 +787,62 @@ def page_home():
     # ── Bản đồ 12 bài theo 4 cấp độ ──
     section_header("📚", "12 Bài toán theo 4 cấp độ", "Từ cơ bản đến nâng cao — dữ liệu thực Việt Nam")
 
-    # ── 4 cấp độ — pure HTML, không dùng st.expander tránh .arrow bug ──
-    _LEVELS = [
-        ("#16a34a", "DỄ",         "Bài 1–3",  [
-            ("Bài 1","Hàm sản xuất Cobb-Douglas mở rộng","Cobb-Douglas + TFP + Growth Accounting + Dự báo GDP 2030","numpy · pandas · scipy"),
-            ("Bài 2","LP phân bổ ngân sách số","4 hạng mục đầu tư · shadow price · sensitivity analysis","scipy.optimize · pulp"),
-            ("Bài 3","Chỉ số ưu tiên 10 ngành","Min-max normalization · weighted scoring · sensitivity heatmap","numpy · pandas"),
-        ]),
-        ("#ca8a04", "TRUNG BÌNH", "Bài 4–6",  [
-            ("Bài 4","LP ngành-vùng (24 biến)","6 vùng x 4 hạng mục · ràng buộc công bằng · PuLP & CVXPY","pulp · cvxpy"),
-            ("Bài 5","MIP lựa chọn 15 dự án","Biến nhị phân · tiên quyết · ngân sách đa năm","pulp CBC"),
-            ("Bài 6","TOPSIS xếp hạng 6 vùng","Entropy weight · AHP · phân tích độ nhạy w_AI","numpy · scikit-criteria"),
-        ]),
-        ("#ea580c", "KHÁ KHÓ",   "Bài 7–9",  [
-            ("Bài 7","NSGA-II Pareto đa mục tiêu","4 mục tiêu: tăng trưởng · bao trùm · môi trường · an ninh","pymoo"),
-            ("Bài 8","Tối ưu động 2026-2035","Quỹ đạo K,D,AI,H,Y · CRRA utility · cú sốc TFP","scipy SLSQP · cvxpy"),
-            ("Bài 9","Lao động & AI - NetJob","Mô phỏng 8 ngành · Sankey flow · ngưỡng đào tạo lại","cvxpy · plotly"),
-        ]),
-        ("#dc2626", "KHÓ",        "Bài 10–12",[
-            ("Bài 10","Quy hoạch ngẫu nhiên 2 giai đoạn","VSS · EVPI · Robust minimax regret · 4 kịch bản","pyomo · scipy"),
-            ("Bài 11","Q-learning chính sách thích nghi","MDP 3^4=81 trạng thái · 5 hành động · 8.000 episodes","gymnasium"),
-            ("Bài 12","Đồ án AIDEOM-VN tích hợp","6 module M1-M6 · 5 kịch bản chính sách · dashboard","streamlit · dash"),
-        ]),
+    # ── 4 cấp độ — st.columns + st.button để chuyển trang khi click ──
+    _BAI_DATA = [
+        # (page_idx, bai_code, title, desc, tools, color)
+        (1, "Bài 1", "Hàm sản xuất Cobb-Douglas", "TFP · Growth Accounting · Dự báo GDP 2030", "numpy · pandas · scipy", "#16a34a"),
+        (2, "Bài 2", "LP Ngân sách số", "4 hạng mục · shadow price · sensitivity", "scipy · pulp", "#16a34a"),
+        (3, "Bài 3", "Chỉ số ưu tiên 10 ngành", "Min-max normalization · weighted scoring", "numpy · pandas", "#16a34a"),
+        (4, "Bài 4", "LP ngành-vùng 24 biến", "6 vùng x 4 hạng mục · công bằng vùng miền", "pulp · cvxpy", "#ca8a04"),
+        (5, "Bài 5", "MIP 15 dự án", "Biến nhị phân · precedence · đa năm", "pulp CBC", "#ca8a04"),
+        (6, "Bài 6", "TOPSIS 6 vùng", "Entropy weight · AHP · phân tích độ nhạy", "numpy · scikit", "#ca8a04"),
+        (7, "Bài 7", "NSGA-II Pareto", "4 mục tiêu: GDP · bao trùm · môi trường · an ninh", "pymoo", "#ea580c"),
+        (8, "Bài 8", "Tối ưu động 2026-2035", "K,D,AI,H,Y · CRRA utility · cú sốc TFP", "scipy SLSQP", "#ea580c"),
+        (9, "Bài 9", "Lao động & AI NetJob", "8 ngành · Sankey flow · ngưỡng đào tạo lại", "cvxpy · plotly", "#ea580c"),
+        (10, "Bài 10", "Quy hoạch ngẫu nhiên", "VSS · EVPI · Robust minimax · 4 kịch bản", "pyomo · scipy", "#dc2626"),
+        (11, "Bài 11", "Q-learning RL", "MDP 81 trạng thái · 5 hành động · 8000 eps", "gymnasium", "#dc2626"),
+        (12, "Bài 12", "AIDEOM-VN tích hợp", "6 module M1-M6 · 5 kịch bản · dashboard", "streamlit", "#dc2626"),
     ]
-    for _color, _lvl, _brange, _items in _LEVELS:
-        _cards = ""
-        for _bcode, _title, _desc, _tools in _items:
-            _cards += (
-                f"<div style='flex:1;min-width:0;background:#0a1628;border:1px solid #1e3050;"
-                f"border-top:3px solid {_color};border-radius:12px;padding:14px 16px;'>"
-                f"<div style='display:inline-block;background:{_color}22;color:{_color};"
-                f"border-radius:999px;padding:2px 12px;font-size:.73rem;font-weight:700;"
-                f"letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;'>{_bcode}</div>"
-                f"<div style='font-size:.91rem;font-weight:700;color:#fff;margin-bottom:5px;'>{_title}</div>"
-                f"<div style='font-size:.78rem;color:#a8bbd4;margin-bottom:8px;line-height:1.5;'>{_desc}</div>"
-                f"<div style='font-size:.70rem;color:#2ec4b6;font-family:monospace;'>{_tools}</div>"
-                f"</div>"
-            )
+
+    _LEVEL_GROUPS = [
+        ("#16a34a", "DỄ",         "Bài 1–3",  _BAI_DATA[0:3]),
+        ("#ca8a04", "TRUNG BÌNH", "Bài 4–6",  _BAI_DATA[3:6]),
+        ("#ea580c", "KHÁ KHÓ",   "Bài 7–9",  _BAI_DATA[6:9]),
+        ("#dc2626", "KHÓ",       "Bài 10–12", _BAI_DATA[9:12]),
+    ]
+
+    for _color, _lvl, _brange, _group in _LEVEL_GROUPS:
+        # Level header
         st.markdown(
-            f"<div style='margin-bottom:14px;'>"
             f"<div style='display:flex;align-items:center;gap:10px;"
             f"background:#0f1d34;border:1px solid #1e3050;border-left:4px solid {_color};"
-            f"border-radius:12px;padding:11px 18px;margin-bottom:8px;'>"
-            f"<div style='width:10px;height:10px;border-radius:50%;background:{_color};flex-shrink:0;'></div>"
-            f"<span style='font-weight:700;color:#fff;font-size:.95rem;'>Cấp độ {_lvl}</span>"
-            f"<span style='margin-left:auto;font-size:.78rem;color:#5e7a99;'>{_brange}</span>"
-            f"</div>"
-            f"<div style='display:flex;gap:10px;'>{_cards}</div>"
+            f"border-radius:12px;padding:10px 18px;margin:10px 0 6px;'>"
+            f"<div style='width:9px;height:9px;border-radius:50%;background:{_color};flex-shrink:0;'></div>"
+            f"<span style='font-weight:700;color:#fff;font-size:.93rem;'>Cấp độ {_lvl}</span>"
+            f"<span style='margin-left:auto;font-size:.76rem;color:#5e7a99;'>{_brange}</span>"
             f"</div>",
             unsafe_allow_html=True
         )
+        # 3 cards as columns with real st.button
+        _cols = st.columns(3)
+        for _ci, (_pidx, _bcode, _title, _desc, _tools, _c) in enumerate(_group):
+            with _cols[_ci]:
+                st.markdown(
+                    f"<div style='background:#0a1628;border:1px solid #1e3050;"
+                    f"border-top:3px solid {_c};border-radius:12px;padding:14px 16px 10px;'>"
+                    f"<div style='display:inline-block;background:{_c}22;color:{_c};"
+                    f"border-radius:999px;padding:2px 12px;font-size:.72rem;font-weight:700;"
+                    f"text-transform:uppercase;margin-bottom:8px;'>{_bcode}</div>"
+                    f"<div style='font-size:.9rem;font-weight:700;color:#fff;margin-bottom:5px;'>{_title}</div>"
+                    f"<div style='font-size:.77rem;color:#a8bbd4;margin-bottom:8px;line-height:1.5;'>{_desc}</div>"
+                    f"<div style='font-size:.69rem;color:#2ec4b6;font-family:monospace;margin-bottom:10px;'>{_tools}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                if st.button(f"Mở {_bcode} →", key=f"home_btn_{_pidx}", use_container_width=True):
+                    st.session_state.page_idx = _pidx
+                    st.rerun()
+
 
     st.markdown("<div class='vn-divider'></div>", unsafe_allow_html=True)
 
