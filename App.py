@@ -475,9 +475,63 @@ if "page_idx" not in st.session_state:
 def _nav(idx):
     st.session_state.page_idx = idx
 
-# ── CSS cho sidebar buttons ──────────────────────────────────
+# ── CSS cho sidebar buttons + logo ──────────────────────────
 st.markdown("""
 <style>
+
+/* ── Sidebar logo — vẽ icon 3 thanh bằng CSS thuần, không dùng ký tự nào ── */
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
+  > [data-testid="stVerticalBlock"]
+  > div:first-child
+  [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] section > div > div > div > div:first-child
+  [data-testid="stMarkdownContainer"] p {
+  position: relative !important;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+  background: linear-gradient(90deg, #4895ef 0%, #2ec4b6 50%, #e63946 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  letter-spacing: -.01em !important;
+  margin: 10px 0 2px 38px !important;
+  line-height: 1.3 !important;
+}
+/* Vẽ icon 3 thanh ngang bằng CSS — đặt bên trái logo */
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
+  > [data-testid="stVerticalBlock"]
+  > div:first-child
+  [data-testid="stMarkdownContainer"]::before,
+[data-testid="stSidebar"] section > div > div > div > div:first-child
+  [data-testid="stMarkdownContainer"]::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 14px !important;
+  width: 24px !important;
+  height: 18px !important;
+  background:
+    linear-gradient(#4895ef, #4895ef) 0 0/100% 3px no-repeat,
+    linear-gradient(#2ec4b6, #2ec4b6) 0 50%/72% 3px no-repeat,
+    linear-gradient(#e63946, #e63946) 0 100%/88% 3px no-repeat !important;
+  border-radius: 2px !important;
+}
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p,
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+  font-size: .65rem !important;
+  color: #4895ef !important;
+  text-transform: uppercase !important;
+  letter-spacing: .12em !important;
+  opacity: .7 !important;
+  margin: 0 0 10px 38px !important;
+  -webkit-text-fill-color: #4895ef !important;
+}
+[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
+  > [data-testid="stVerticalBlock"]
+  > div:first-child {
+  position: relative !important;
+}
+
 section[data-testid="stSidebar"] .stButton button {
   width: 100% !important;
   text-align: left !important;
@@ -512,31 +566,8 @@ section[data-testid="stSidebar"] .stButton button:focus {
 
 # ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("""
-    <div style='padding:16px 0 10px;'>
-      <div style='display:flex;align-items:center;gap:10px;'>
-        <svg width="22" height="16" viewBox="0 0 22 16" fill="none"
-             xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-          <rect y="0"  width="22" height="2.5" rx="1.25" fill="#4895ef"/>
-          <rect y="6"  width="16" height="2.5" rx="1.25" fill="#2ec4b6"/>
-          <rect y="12" width="19" height="2.5" rx="1.25" fill="#4895ef"/>
-        </svg>
-        <div style='font-size:1.2rem;font-weight:900;letter-spacing:-.02em;
-             background:linear-gradient(90deg,#4895ef,#2ec4b6);
-             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-             background-clip:text;'>
-          AIDEOM<span style='
-             background:linear-gradient(90deg,#e63946,#f4a261);
-             -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-             background-clip:text;'>-VN</span>
-        </div>
-      </div>
-      <div style='font-size:.68rem;color:#4895ef;margin-top:5px;font-weight:600;
-           text-transform:uppercase;letter-spacing:.1em;opacity:.7;'>
-        Decision Optimization Model
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("**AIDEOM-VN**")
+    st.caption("Decision Optimization Model · Vietnam")
 
     st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
