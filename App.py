@@ -94,12 +94,25 @@ html, body, .stApp {
   padding: 6px 10px !important;
   border-radius: 8px !important;
   transition: background .2s !important;
-  display: block !important;
+  display: flex !important;
+  align-items: center !important;
   font-size: .85rem !important;
   font-weight: 500 !important;
+  cursor: pointer !important;
 }
 [data-testid="stSidebar"] .stRadio label:hover {
   background: var(--bg-hover) !important;
+}
+/* Hide default radio circle — use custom indicator */
+[data-testid="stSidebar"] .stRadio [data-testid="stWidgetLabel"],
+[data-testid="stSidebar"] .stRadio input[type="radio"] {
+  display: none !important;
+}
+[data-testid="stSidebar"] .stRadio div[role="radiogroup"] > label > div:first-child {
+  display: none !important;
+}
+[data-testid="stSidebar"] [data-baseweb="radio"] input + div {
+  display: none !important;
 }
 
 /* ─── TABS ──────────────────────────────── */
@@ -132,44 +145,44 @@ html, body, .stApp {
 .stSlider [data-baseweb="slider"] { color: var(--accent-cyn) !important; }
 
 /* ─── EXPANDER ──────────────────────────── */
-.streamlit-expanderHeader,
-[data-testid="stExpander"] summary,
-[data-testid="stExpander"] > details > summary {
-  background: var(--bg-panel) !important;
+[data-testid="stExpander"] {
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
-  color: var(--txt-hi) !important;
-  font-weight: 600 !important;
-  border: 1px solid var(--border) !important;
+  overflow: hidden !important;
+}
+[data-testid="stExpander"] details {
+  background: var(--bg-panel) !important;
+}
+[data-testid="stExpander"] details summary {
+  background: var(--bg-panel) !important;
   padding: 12px 16px !important;
+  list-style: none !important;
+  cursor: pointer !important;
 }
-.streamlit-expanderContent,
-[data-testid="stExpander"] > details > div {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-top: none !important;
-  border-radius: 0 0 var(--radius) var(--radius) !important;
+/* Hide the .arrow text node — this is the key fix */
+[data-testid="stExpander"] details summary .arrow {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  opacity: 0 !important;
 }
-/* Fix expander arrow — prevent it from overlapping text/emoji */
-[data-testid="stExpander"] summary svg {
-  flex-shrink: 0 !important;
+[data-testid="stExpander"] details summary svg {
   color: var(--txt-md) !important;
+  flex-shrink: 0 !important;
 }
-[data-testid="stExpander"] summary p,
-[data-testid="stExpander"] summary span,
-.streamlit-expanderHeader p {
+[data-testid="stExpander"] details summary p,
+[data-testid="stExpander"] details summary span:not(.arrow) {
   color: var(--txt-hi) !important;
   font-weight: 600 !important;
-}
-
-/* ─── LEVEL EXPANDERS ─────────────────── */
-/* Color the expander title text to match level */
-[data-testid="stExpander"] summary p {
   font-size: .95rem !important;
-  letter-spacing: .02em !important;
 }
-/* Remove any ::before pseudo-elements that clash */
-.streamlit-expanderHeader *::before,
-.streamlit-expanderHeader *::after { content: none !important; }
+[data-testid="stExpander"] details > div[data-testid="stExpanderDetails"] {
+  background: var(--bg-card) !important;
+  border-top: 1px solid var(--border) !important;
+  padding: 16px !important;
+}
 
 /* ─── SUCCESS / ERROR / WARNING ─────────── */
 [data-testid="stAlert"] { border-radius: var(--radius) !important; }
@@ -442,8 +455,12 @@ PAGES = [
 with st.sidebar:
     st.markdown("""
     <div style='padding:16px 0 8px;'>
-      <div style='font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-.02em;'>
-        🇻🇳 AIDEOM<span style='color:#e63946;'>-VN</span>
+      <div style='font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-.02em;
+           display:flex;align-items:center;gap:8px;'>
+        <span style='display:inline-flex;align-items:center;justify-content:center;
+              width:28px;height:28px;background:#e63946;border-radius:6px;
+              font-size:.85rem;flex-shrink:0;'>VN</span>
+        AIDEOM<span style='color:#e63946;'>-VN</span>
       </div>
       <div style='font-size:.72rem;color:#5e7a99;margin-top:3px;font-weight:500;
            text-transform:uppercase;letter-spacing:.08em;'>
@@ -687,51 +704,56 @@ def page_home():
     # ── Bản đồ 12 bài theo 4 cấp độ ──
     section_header("📚", "12 Bài toán theo 4 cấp độ", "Từ cơ bản đến nâng cao — dữ liệu thực Việt Nam")
 
-    levels = [
-        ("🟢", "Cấp độ DỄ", "#16a34a", [
+    # ── 4 cấp độ — pure HTML, không dùng st.expander tránh .arrow bug ──
+    _LEVELS = [
+        ("#16a34a", "DỄ",         "Bài 1–3",  [
             ("Bài 1","Hàm sản xuất Cobb-Douglas mở rộng","Cobb-Douglas + TFP + Growth Accounting + Dự báo GDP 2030","numpy · pandas · scipy"),
             ("Bài 2","LP phân bổ ngân sách số","4 hạng mục đầu tư · shadow price · sensitivity analysis","scipy.optimize · pulp"),
             ("Bài 3","Chỉ số ưu tiên 10 ngành","Min-max normalization · weighted scoring · sensitivity heatmap","numpy · pandas"),
         ]),
-        ("🟡","Cấp độ TRUNG BÌNH","#ca8a04",[
-            ("Bài 4","LP ngành-vùng (24 biến)","6 vùng × 4 hạng mục · ràng buộc công bằng · PuLP & CVXPY","pulp · cvxpy"),
+        ("#ca8a04", "TRUNG BÌNH", "Bài 4–6",  [
+            ("Bài 4","LP ngành-vùng (24 biến)","6 vùng x 4 hạng mục · ràng buộc công bằng · PuLP & CVXPY","pulp · cvxpy"),
             ("Bài 5","MIP lựa chọn 15 dự án","Biến nhị phân · tiên quyết · ngân sách đa năm","pulp CBC"),
             ("Bài 6","TOPSIS xếp hạng 6 vùng","Entropy weight · AHP · phân tích độ nhạy w_AI","numpy · scikit-criteria"),
         ]),
-        ("🟠","Cấp độ KHÁ KHÓ","#ea580c",[
+        ("#ea580c", "KHÁ KHÓ",   "Bài 7–9",  [
             ("Bài 7","NSGA-II Pareto đa mục tiêu","4 mục tiêu: tăng trưởng · bao trùm · môi trường · an ninh","pymoo"),
             ("Bài 8","Tối ưu động 2026-2035","Quỹ đạo K,D,AI,H,Y · CRRA utility · cú sốc TFP","scipy SLSQP · cvxpy"),
             ("Bài 9","Lao động & AI - NetJob","Mô phỏng 8 ngành · Sankey flow · ngưỡng đào tạo lại","cvxpy · plotly"),
         ]),
-        ("🔴","Cấp độ KHÓ","#dc2626",[
+        ("#dc2626", "KHÓ",        "Bài 10–12",[
             ("Bài 10","Quy hoạch ngẫu nhiên 2 giai đoạn","VSS · EVPI · Robust minimax regret · 4 kịch bản","pyomo · scipy"),
-            ("Bài 11","Q-learning chính sách thích nghi","MDP 3⁴=81 trạng thái · 5 hành động · 8.000 episodes","gymnasium"),
-            ("Bài 12","Đồ án AIDEOM-VN tích hợp","6 module M1→M6 · 5 kịch bản chính sách · dashboard","streamlit · dash"),
+            ("Bài 11","Q-learning chính sách thích nghi","MDP 3^4=81 trạng thái · 5 hành động · 8.000 episodes","gymnasium"),
+            ("Bài 12","Đồ án AIDEOM-VN tích hợp","6 module M1-M6 · 5 kịch bản chính sách · dashboard","streamlit · dash"),
         ]),
     ]
-
-    for emoji, lvl_name, color, items in levels:
-        # Use st.expander with plain text title (no emoji = no arrow overlap bug)
-        label = f"[ {lvl_name} ]"
-        with st.expander(label, expanded=(color=="#16a34a")):
-            cols = st.columns(3)
-            for i, (bai_code, title, desc, tools) in enumerate(items):
-                with cols[i]:
-                    st.markdown(f"""
-                    <div style='background:var(--bg-panel);border:1px solid var(--border);
-                         border-top:3px solid {color};border-radius:var(--radius);
-                         padding:14px 16px;height:100%;'>
-                      <span style='display:inline-block;background:{color}22;color:{color};
-                            border-radius:999px;padding:2px 10px;font-size:.76rem;font-weight:700;
-                            letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;'>
-                        {bai_code}
-                      </span>
-                      <div style='font-size:.93rem;font-weight:700;color:#fff;margin-bottom:6px;'>{title}</div>
-                      <div style='font-size:.8rem;color:var(--txt-md);margin-bottom:10px;line-height:1.5;'>{desc}</div>
-                      <div style='font-size:.72rem;color:var(--accent-cyn);
-                            font-family:"JetBrains Mono",monospace;opacity:.8;'>{tools}</div>
-                    </div>""", unsafe_allow_html=True)
-            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+    for _color, _lvl, _brange, _items in _LEVELS:
+        _cards = ""
+        for _bcode, _title, _desc, _tools in _items:
+            _cards += (
+                f"<div style='flex:1;min-width:0;background:#0a1628;border:1px solid #1e3050;"
+                f"border-top:3px solid {_color};border-radius:12px;padding:14px 16px;'>"
+                f"<div style='display:inline-block;background:{_color}22;color:{_color};"
+                f"border-radius:999px;padding:2px 12px;font-size:.73rem;font-weight:700;"
+                f"letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;'>{_bcode}</div>"
+                f"<div style='font-size:.91rem;font-weight:700;color:#fff;margin-bottom:5px;'>{_title}</div>"
+                f"<div style='font-size:.78rem;color:#a8bbd4;margin-bottom:8px;line-height:1.5;'>{_desc}</div>"
+                f"<div style='font-size:.70rem;color:#2ec4b6;font-family:monospace;'>{_tools}</div>"
+                f"</div>"
+            )
+        st.markdown(
+            f"<div style='margin-bottom:14px;'>"
+            f"<div style='display:flex;align-items:center;gap:10px;"
+            f"background:#0f1d34;border:1px solid #1e3050;border-left:4px solid {_color};"
+            f"border-radius:12px;padding:11px 18px;margin-bottom:8px;'>"
+            f"<div style='width:10px;height:10px;border-radius:50%;background:{_color};flex-shrink:0;'></div>"
+            f"<span style='font-weight:700;color:#fff;font-size:.95rem;'>Cấp độ {_lvl}</span>"
+            f"<span style='margin-left:auto;font-size:.78rem;color:#5e7a99;'>{_brange}</span>"
+            f"</div>"
+            f"<div style='display:flex;gap:10px;'>{_cards}</div>"
+            f"</div>",
+            unsafe_allow_html=True
+        )
 
     st.markdown("<div class='vn-divider'></div>", unsafe_allow_html=True)
 
