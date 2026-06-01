@@ -479,57 +479,26 @@ def _nav(idx):
 st.markdown("""
 <style>
 
-/* ── Sidebar logo — vẽ icon 3 thanh bằng CSS thuần, không dùng ký tự nào ── */
-[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
-  > [data-testid="stVerticalBlock"]
-  > div:first-child
-  [data-testid="stMarkdownContainer"] p,
-[data-testid="stSidebar"] section > div > div > div > div:first-child
-  [data-testid="stMarkdownContainer"] p {
-  position: relative !important;
-  font-size: 1.15rem !important;
+/* ── Sidebar logo — chỉ chữ, không icon ── */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p:first-child {
+  font-size: 1.2rem !important;
   font-weight: 900 !important;
   background: linear-gradient(90deg, #4895ef 0%, #2ec4b6 50%, #e63946 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
   letter-spacing: -.01em !important;
-  margin: 10px 0 2px 38px !important;
+  margin: 10px 0 2px !important;
   line-height: 1.3 !important;
 }
-/* Vẽ icon 3 thanh ngang bằng CSS — đặt bên trái logo */
-[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
-  > [data-testid="stVerticalBlock"]
-  > div:first-child
-  [data-testid="stMarkdownContainer"]::before,
-[data-testid="stSidebar"] section > div > div > div > div:first-child
-  [data-testid="stMarkdownContainer"]::before {
-  content: "" !important;
-  position: absolute !important;
-  left: 0 !important;
-  top: 14px !important;
-  width: 24px !important;
-  height: 18px !important;
-  background:
-    linear-gradient(#4895ef, #4895ef) 0 0/100% 3px no-repeat,
-    linear-gradient(#2ec4b6, #2ec4b6) 0 50%/72% 3px no-repeat,
-    linear-gradient(#e63946, #e63946) 0 100%/88% 3px no-repeat !important;
-  border-radius: 2px !important;
-}
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p,
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
   font-size: .65rem !important;
   color: #4895ef !important;
   text-transform: uppercase !important;
   letter-spacing: .12em !important;
   opacity: .7 !important;
-  margin: 0 0 10px 38px !important;
+  margin: 0 0 10px !important;
   -webkit-text-fill-color: #4895ef !important;
-}
-[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"]
-  > [data-testid="stVerticalBlock"]
-  > div:first-child {
-  position: relative !important;
 }
 
 section[data-testid="stSidebar"] .stButton button {
