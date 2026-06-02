@@ -475,80 +475,83 @@ if "page_idx" not in st.session_state:
 def _nav(idx):
     st.session_state.page_idx = idx
 
-# ── CSS cho sidebar buttons + logo ──────────────────────────
+# ── CSS sidebar — logo "VN" badge + title + radio đơn giản ───
 st.markdown("""
 <style>
-
-/* ── Sidebar logo — vẽ icon 3 thanh bằng CSS thuần, KHÔNG dùng ký tự icon ── */
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type {
+/* Logo "VN" badge - hộp đỏ vuông nhỏ */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type p {
   position: relative !important;
-  padding-left: 34px !important;
+  padding-left: 42px !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: #f0f4ff !important;
+  margin: 14px 0 6px !important;
+  line-height: 1.4 !important;
 }
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type::before {
-  content: "" !important;
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type p::before {
+  content: "VN" !important;
   position: absolute !important;
   left: 0 !important;
-  top: 14px !important;
-  width: 22px !important;
-  height: 16px !important;
-  background:
-    linear-gradient(#4895ef, #4895ef) 0 0%/100% 3px no-repeat,
-    linear-gradient(#2ec4b6, #2ec4b6) 0 50%/72% 3px no-repeat,
-    linear-gradient(#e63946, #e63946) 0 100%/88% 3px no-repeat !important;
-  border-radius: 2px !important;
-}
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type p {
-  font-size: 1.2rem !important;
-  font-weight: 900 !important;
-  background: linear-gradient(90deg, #4895ef 0%, #2ec4b6 50%, #e63946 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  letter-spacing: -.01em !important;
-  margin: 10px 0 2px !important;
-  line-height: 1.3 !important;
-}
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"]:first-of-type {
-  padding-left: 34px !important;
-}
-[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-  font-size: .65rem !important;
-  color: #4895ef !important;
-  text-transform: uppercase !important;
-  letter-spacing: .12em !important;
-  opacity: .7 !important;
-  margin: 0 0 10px !important;
-  -webkit-text-fill-color: #4895ef !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: linear-gradient(135deg, #e63946, #f4a261) !important;
+  color: #fff !important;
+  font-size: .72rem !important;
+  font-weight: 800 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: .04em !important;
 }
 
-section[data-testid="stSidebar"] .stButton button {
-  width: 100% !important;
-  text-align: left !important;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 7px 12px !important;
-  font-size: .84rem !important;
-  font-weight: 500 !important;
+/* Caption nhỏ dưới tiêu đề */
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+  font-size: .78rem !important;
   color: #a8bbd4 !important;
+  margin: 0 0 14px !important;
+  line-height: 1.5 !important;
+  -webkit-text-fill-color: #a8bbd4 !important;
+}
+
+/* "Chọn bài" — label của radio */
+[data-testid="stSidebar"] .stRadio > label {
+  font-size: .82rem !important;
+  font-weight: 600 !important;
+  color: #a8bbd4 !important;
+  margin-bottom: 6px !important;
+}
+
+/* Radio options */
+[data-testid="stSidebar"] [role="radiogroup"] {
+  gap: 2px !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label {
+  display: flex !important;
+  align-items: center !important;
+  padding: 5px 8px !important;
+  border-radius: 6px !important;
+  font-size: .85rem !important;
+  font-weight: 500 !important;
+  color: #f0f4ff !important;
   cursor: pointer !important;
-  transition: background .15s, color .15s !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  transition: background .15s !important;
 }
-section[data-testid="stSidebar"] .stButton button:hover {
+[data-testid="stSidebar"] [role="radiogroup"] > label:hover {
   background: #162240 !important;
-  color: #fff !important;
 }
-section[data-testid="stSidebar"] .stButton button:focus {
-  box-shadow: none !important;
-  outline: none !important;
+[data-testid="stSidebar"] [role="radiogroup"] > label > div:first-child {
+  margin-right: 2px !important;
 }
-.sidebar-active button {
-  background: #1e3050 !important;
-  color: #fff !important;
-  border-left: 3px solid #e63946 !important;
+/* Radio circle styling */
+[data-testid="stSidebar"] [role="radiogroup"] [data-baseweb="radio"] > div:first-child {
+  border-color: #5e7a99 !important;
+  background: transparent !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] [data-baseweb="radio"][aria-checked="true"] > div:first-child {
+  background: #e63946 !important;
+  border-color: #e63946 !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] > label > div:nth-child(2) > div {
+  color: #f0f4ff !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -556,37 +559,17 @@ section[data-testid="stSidebar"] .stButton button:focus {
 # ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("**AIDEOM-VN**")
-    st.caption("Decision Optimization Model · Vietnam")
+    st.caption("Mô hình ra quyết định phát triển kinh tế Việt Nam trong kỉ nguyên AI")
 
-    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+    page = st.radio(
+        "Chọn bài",
+        options=PAGES,
+        index=st.session_state.page_idx,
+        key="page_radio",
+    )
+    st.session_state.page_idx = PAGES.index(page)
 
-    _icons = ["🏠","📐","💰","🎯","🗺","🔢","🏆","🌐","⏳","👷","🎲","🤖","🇻🇳"]
-    _labels = [
-        "Trang chủ",
-        "Bài 1 — Cobb-Douglas + AI",
-        "Bài 2 — LP Ngân sách số",
-        "Bài 3 — Chỉ số ưu tiên ngành",
-        "Bài 4 — LP ngành-vùng",
-        "Bài 5 — MIP 15 dự án",
-        "Bài 6 — TOPSIS 6 vùng",
-        "Bài 7 — NSGA-II Pareto",
-        "Bài 8 — Tối ưu động",
-        "Bài 9 — Lao động & AI",
-        "Bài 10 — Quy hoạch ngẫu nhiên",
-        "Bài 11 — Q-learning RL",
-        "Bài 12 — AIDEOM tích hợp",
-    ]
-    for _i, (_ic, _lb) in enumerate(zip(_icons, _labels)):
-        _active = st.session_state.page_idx == _i
-        _wrap_open  = "<div class='sidebar-active'>" if _active else "<div>"
-        _wrap_close = "</div>"
-        st.markdown(_wrap_open, unsafe_allow_html=True)
-        if st.button(f"{_ic}  {_lb}", key=f"nav_{_i}"):
-            _nav(_i)
-            st.rerun()
-        st.markdown(_wrap_close, unsafe_allow_html=True)
-
-    st.markdown("<hr style='border-color:#1e3050;margin:12px 0;'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:#1e3050;margin:14px 0 12px;'>", unsafe_allow_html=True)
     st.markdown("""
     <div class='id-card'>
       <b>Họ và tên:</b> Nguyễn Bảo Khánh<br>
@@ -597,7 +580,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     st.markdown("<div style='font-size:.7rem;color:#5e7a99;margin-top:8px;'>NSO · MoST · MIC · MPI · WB · GII 2025</div>", unsafe_allow_html=True)
 
-page = PAGES[st.session_state.page_idx]
+
 
 
 # ============================================================
