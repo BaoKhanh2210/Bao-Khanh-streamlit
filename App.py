@@ -62,6 +62,34 @@ html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
     background: #e8f4f8; border-left: 4px solid #29b6f6;
     padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 0.88rem; color: #1a1a2e;
 }
+/* ── Box Bối cảnh Việt Nam ── */
+.context-box {
+    background: linear-gradient(135deg, #fff8e1 0%, #fffde7 100%);
+    border-left: 5px solid #ffa726; border-radius: 0 12px 12px 0;
+    padding: 16px 20px; margin: 14px 0; color: #4e342e; line-height: 1.7; font-size: 0.9rem;
+}
+.context-box h4 { color: #e65100; margin: 0 0 8px; font-size: 1rem; }
+.context-box b { color: #bf360c; }
+/* ── Box Mô hình toán học ── */
+.model-box {
+    background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 100%);
+    border-left: 5px solid #5e35b1; border-radius: 0 12px 12px 0;
+    padding: 16px 20px; margin: 14px 0; color: #1a237e; line-height: 1.8; font-size: 0.9rem;
+}
+.model-box h4 { color: #4527a0; margin: 0 0 8px; font-size: 1rem; }
+.model-box .formula {
+    background: rgba(255,255,255,0.7); border: 1px dashed #9575cd; border-radius: 8px;
+    padding: 10px 14px; margin: 8px 0; font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.92rem; color: #311b92; text-align: center;
+}
+.model-box ul { margin: 6px 0; padding-left: 20px; }
+.model-box li { margin: 3px 0; }
+/* ── Box Nhận xét/Diễn giải ── */
+.note-box {
+    background: #e8f5e9; border-left: 4px solid #43a047; border-radius: 0 8px 8px 0;
+    padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; color: #1b5e20; line-height: 1.65;
+}
+.note-box b { color: #2e7d32; }
 
 .sidebar-logo { text-align: center; padding: 18px 14px 14px; border-bottom: 1px solid rgba(144,202,249,0.15); margin-bottom: 10px; }
 .sidebar-logo .title { font-size: 1.05rem; font-weight: 700; color: #e3f2fd; letter-spacing: 1px; }
@@ -309,7 +337,36 @@ if menu == "🏠 Trang chủ":
 # ══════════════════════════════════════════════════
 elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
     st.markdown('<div class="page-header"><h1>Bài 1 — Hàm sản xuất Cobb-Douglas mở rộng</h1><p>TFP · Dự báo GDP · Phân rã tăng trưởng · Kịch bản 2030</p></div>', unsafe_allow_html=True)
-    st.markdown('<div class="info-box">Y = A · K<sup>0.33</sup> · L<sup>0.42</sup> · D<sup>0.10</sup> · AI<sup>0.08</sup> · H<sup>0.07</sup></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 1.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo Cục Thống kê quốc gia, GDP Việt Nam 2024 đạt <b>11.511,9 nghìn tỷ VND</b> (tăng 7,09%),
+    năng suất lao động đạt <b>221,9 triệu VND/người</b>, đến 2025 đạt 245,0 triệu VND/người.
+    Đóng góp khoa học - công nghệ vào GDP 2025 ước <b>khoảng 2,49%</b>, kinh tế số chiếm <b>18,3-19,5% GDP</b>.
+    <br><br>
+    <b>Câu hỏi:</b> Nếu mô hình hóa nền kinh tế bằng hàm Cobb-Douglas mở rộng thêm yếu tố số hóa (D),
+    năng lực AI và vốn nhân lực số (H) thì sản lượng dự báo có khớp thực tế không, và yếu tố nào
+    đóng góp lớn nhất vào tăng trưởng?
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 1.2 — Mô hình toán học</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Hàm sản xuất Cobb-Douglas mở rộng</h4>
+    <div class="formula">Y(t) = A(t) · K^0.33 · L^0.42 · D^0.10 · AI^0.08 · H^0.07</div>
+    <b>Điều kiện lợi suất không đổi theo quy mô:</b>
+    <div class="formula">α + β + γ + δ + θ = 1</div>
+    <b>Phân rã tăng trưởng (lấy log và sai phân theo thời gian):</b>
+    <div class="formula">ΔlnY = ΔlnA + α·ΔlnK + β·ΔlnL + γ·ΔlnD + δ·ΔlnAI + θ·ΔlnH</div>
+    <b>Trong đó:</b>
+    <ul>
+      <li><b>Y</b> - GDP (nghìn tỷ VND); <b>A</b> - năng suất nhân tố tổng hợp (TFP)</li>
+      <li><b>K</b> - vốn vật chất; <b>L</b> - lao động (triệu người)</li>
+      <li><b>D</b> - chỉ số số hóa (tỷ trọng kinh tế số/GDP)</li>
+      <li><b>AI</b> - năng lực AI (nghìn DN công nghệ số); <b>H</b> - vốn nhân lực số (% LĐ qua đào tạo)</li>
+    </ul>
+    <b>Hệ số đề xuất:</b> α=0,33 · β=0,42 · γ=0,10 · δ=0,08 · θ=0,07
+    </div>""", unsafe_allow_html=True)
 
     years = df_macro["year"].values
     Y = df_macro["GDP_trillion_VND"].values
@@ -320,6 +377,14 @@ elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
     H   = np.array([24.1,26.1,26.2,27.0,28.4,29.2])
     al,be,ga,de,th = 0.33,0.42,0.10,0.08,0.07
     A = Y/(K**al*L**be*D**ga*AI**de*H**th)
+
+    st.markdown('<div class="sec-title">📋 1.3 — Dữ liệu đầu vào Việt Nam 2020-2025</div>', unsafe_allow_html=True)
+    st.dataframe(pd.DataFrame({
+        "Năm": years, "Y (GDP ng.tỷ)": Y, "K (vốn t.lũy)": K, "L (triệu LĐ)": L,
+        "D (KTS/GDP %)": D, "AI (ng.DN số)": AI, "H (LĐ ĐT %)": H,
+    }), use_container_width=True, hide_index=True)
+
+    st.markdown('<div class="sec-title">🔬 1.4 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
 
     # 1.4.1
     st.markdown('<div class="sec-title">📌 Câu 1.4.1 — TFP (Solow Residual)</div>', unsafe_allow_html=True)
@@ -332,6 +397,9 @@ elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
     c1,c2,c3 = st.columns(3)
     c1.metric("TFP 2020",f"{A[0]:.4f}"); c2.metric("TFP 2025",f"{A[-1]:.4f}")
     c3.metric("Tăng TFP TB",f"{((A[-1]/A[0])**(1/5)-1)*100:.2f}%/năm")
+    st.markdown(f"""<div class="note-box">💡 <b>Nhận xét:</b> TFP có xu hướng tăng dần
+    ({((A[-1]/A[0])**(1/5)-1)*100:.2f}%/năm) - phản ánh chất lượng tăng trưởng được cải thiện,
+    đặc biệt giai đoạn hậu COVID-19 nhờ chuyển đổi số và ứng dụng công nghệ.</div>""", unsafe_allow_html=True)
 
     # 1.4.2
     st.markdown('<div class="sec-title">📌 Câu 1.4.2 — Dự báo & MAPE</div>', unsafe_allow_html=True)
@@ -371,6 +439,33 @@ elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
 # ══════════════════════════════════════════════════
 elif menu == "💰 Bài 2 — LP ngân sách số":
     st.markdown('<div class="page-header"><h1>Bài 2 — Phân bổ ngân sách 4 hạng mục đầu tư số</h1><p>LP · Shadow price · Độ nhạy ngân sách</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 2.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo <b>Quyết định 749/QĐ-TTg</b> về Chương trình Chuyển đổi số quốc gia, đến 2025 Việt Nam đặt mục tiêu
+    kinh tế số đạt <b>20% GDP</b>. Giả sử Bộ KH-ĐT đề xuất phân bổ <b>100.000 tỷ VND</b> ngân sách trung ương 2026
+    cho 4 hạng mục: hạ tầng số (I), AI & dữ liệu (AI), nhân lực số (H), R&D công nghệ.
+    Mỗi hạng mục có hệ số tác động khác nhau tới tăng GDP, đồng thời phải tuân thủ tỷ lệ tối thiểu theo QĐ 411/QĐ-TTg.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 2.2 — Mô hình toán học (Quy hoạch tuyến tính)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Biến quyết định (đơn vị: nghìn tỷ VND)</h4>
+    x1 = hạ tầng số · x2 = AI & dữ liệu · x3 = nhân lực số · x4 = R&D công nghệ
+    <h4>Hàm mục tiêu (tối đa hóa tăng GDP kỳ vọng)</h4>
+    <div class="formula">max Z = 0,85·x1 + 1,20·x2 + 0,95·x3 + 1,35·x4</div>
+    <b>Ràng buộc:</b>
+    <ul>
+      <li>x1 + x2 + x3 + x4 ≤ 100 (ngân sách tổng)</li>
+      <li>x1 ≥ 25 (hạ tầng số tối thiểu); x2 ≥ 15 (AI); x3 ≥ 20 (nhân lực); x4 ≥ 10 (R&D)</li>
+      <li>x2 + x4 ≥ 0,35·(x1+x2+x3+x4) (tỷ trọng công nghệ chiến lược)</li>
+      <li>x1, x2, x3, x4 ≥ 0</li>
+    </ul>
+    <b>Diễn giải hệ số:</b> R&D có hệ số cao nhất (1,35) do tác động lan tỏa dài hạn;
+    AI cao hơn hạ tầng do thu hồi vốn nhanh hơn nhưng cần nhân lực số bổ trợ.
+    </div>""", unsafe_allow_html=True)
+
     from scipy.optimize import linprog
     c=[-0.85,-1.20,-0.95,-1.35]
     A_ub=[[1,1,1,1],[-1,0,0,0],[0,-1,0,0],[0,0,-1,0],[0,0,0,-1],[0.35,-0.65,0.35,-0.65]]
@@ -405,6 +500,26 @@ elif menu == "💰 Bài 2 — LP ngân sách số":
 # ══════════════════════════════════════════════════
 elif menu == "📊 Bài 3 — Priority 10 ngành":
     st.markdown('<div class="page-header"><h1>Bài 3 — Chỉ số ưu tiên ngành Priorityᵢ</h1><p>Min-max · Trọng số · Phân tích độ nhạy</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 3.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Cơ cấu kinh tế 2024: nông-lâm-thủy sản <b>11,86%</b>, công nghiệp-xây dựng <b>37,64%</b>, dịch vụ <b>42,36% GDP</b>.
+    Việt Nam đối diện câu hỏi: trong các ngành lớn, ngành nào nên được <b>ưu tiên đẩy mạnh chuyển đổi số và AI trước</b>
+    để tạo hiệu ứng lan tỏa tối đa? Cần xây dựng một chỉ số ưu tiên định lượng.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 3.2 — Mô hình toán học (Weighted Scoring + Min-max)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Chỉ số ưu tiên ngành i</h4>
+    <div class="formula">Priority(i) = a1·Growth + a2·Productivity + a3·Spillover + a4·Export + a5·Employment + a6·AIReadiness − a7·Risk</div>
+    <b>Chuẩn hóa min-max về thang [0, 1]:</b>
+    <div class="formula">x̃ = (x − min) / (max − min)</div>
+    <b>Với chỉ số "xấu" như Risk (rủi ro tự động hóa) - đảo dấu:</b>
+    <div class="formula">x̃ = (max − x) / (max − min)</div>
+    <b>Bộ trọng số mặc định:</b> a1=0,15 · a2=0,15 · a3=0,20 · a4=0,15 · a5=0,10 · a6=0,20 · a7=0,15
+    </div>""", unsafe_allow_html=True)
+
     df=df_sectors.copy(); df["labor_productivity"]=(df["gdp_share_2024_pct"]/100)*11511.9/df["labor_million"]
     def norm_good(x): return (x-x.min())/(x.max()-x.min())
     def norm_bad(x): return (x.max()-x)/(x.max()-x.min())
@@ -435,6 +550,32 @@ elif menu == "📊 Bài 3 — Priority 10 ngành":
 # ══════════════════════════════════════════════════
 elif menu == "🗺️ Bài 4 — LP ngành-vùng":
     st.markdown('<div class="page-header"><h1>Bài 4 — LP phân bổ ngân sách theo vùng miền</h1><p>24 biến · Công bằng vùng · PuLP CBC</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 4.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo <b>Quyết định 411/QĐ-TTg</b> phê duyệt Chiến lược quốc gia phát triển kinh tế số,
+    các vùng kinh tế xã hội Việt Nam có mức độ sẵn sàng số rất khác nhau. Bài toán: phân bổ
+    <b>50.000 tỷ VND</b> cho <b>6 vùng × 4 hạng mục</b> (I - hạ tầng số, D - chuyển đổi số DN,
+    AI - năng lực AI, H - nhân lực số) sao cho tối đa hóa GDP gain nhưng bảo đảm <b>công bằng vùng miền</b>.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 4.2 — Mô hình toán học (LP 24 biến)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Biến quyết định</h4>
+    x(j,r) ≥ 0 với j ∈ {I, D, AI, H}, r ∈ {1..6} → tổng <b>24 biến</b>
+    <h4>Hàm mục tiêu (GDP gain kỳ vọng, tỷ VND)</h4>
+    <div class="formula">max Z = Σ(r) Σ(j) β(j,r) · x(j,r)</div>
+    <b>Các nhóm ràng buộc:</b>
+    <ul>
+      <li>(C1) Ngân sách tổng: Σ x(j,r) ≤ 50.000 tỷ</li>
+      <li>(C2) Sàn mỗi vùng: Σ(j) x(j,r) ≥ 5.000 ∀r</li>
+      <li>(C3) Trần mỗi vùng: Σ(j) x(j,r) ≤ 12.000 ∀r</li>
+      <li>(C4) Sàn nhân lực số: Σ(r) x(H,r) ≥ 12.000 (24% ngân sách)</li>
+      <li>(C5) Công bằng vùng: D(r) + γ·x(D,r) ≥ λ·max(D(r)+γ·x(D,r)), với γ=0,002, λ=0,6</li>
+    </ul>
+    </div>""", unsafe_allow_html=True)
+
     try:
         import pulp
         regions=['NMM','RRD','NCC','CH','SE','MD']
@@ -445,6 +586,12 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
               'SE':{'I':0.90,'D':1.30,'AI':1.55,'H':1.00},'MD':{'I':1.10,'D':0.85,'AI':0.65,'H':1.25}}
         D0={'NMM':38,'RRD':78,'NCC':55,'CH':32,'SE':82,'MD':48}
         gv,lm=0.002,0.6
+        st.markdown('<div class="sec-title">📋 4.3 — Bảng hệ số tác động biên β(j,r)</div>', unsafe_allow_html=True)
+        st.dataframe(pd.DataFrame(
+            {inames[k]:[beta[r][items[k]] for r in regions] for k in range(4)},
+            index=rnames).assign(**{"D0 (số hóa ban đầu)":[D0[r] for r in regions]}),
+            use_container_width=True)
+        st.markdown('<div class="sec-title">🔬 4.4 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
         m=pulp.LpProblem('B4',pulp.LpMaximize)
         x=pulp.LpVariable.dicts('x',(regions,items),lowBound=0)
         m+=pulp.lpSum(beta[r][j]*x[r][j] for r in regions for j in items)
@@ -473,6 +620,9 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
             ax2.set_title("Tổng ngân sách mỗi vùng",fontweight="bold"); ax2.set_xticklabels(rnames,rotation=20,ha="right"); ax2.legend()
             for ax in [ax1,ax2]: ax.grid(alpha=0.3,axis="y" if ax==ax2 else "x"); ax.spines[["top","right"]].set_visible(False)
             fig.tight_layout(); show_fig(fig)
+            st.markdown("""<div class="note-box">💡 <b>Nhận xét:</b> Ràng buộc công bằng (C5) buộc vốn phân bổ
+            cả cho vùng yếu (Tây Nguyên, Trung du MN). Nếu bỏ C5, vốn sẽ dồn về ĐB sông Hồng & Đông Nam Bộ
+            (β_AI cao nhất 1,40 & 1,55) - làm gia tăng chênh lệch vùng miền. Đây là "chi phí của công bằng".</div>""", unsafe_allow_html=True)
     except ImportError: st.error("Cần cài: `pip install pulp`")
     except Exception as e: st.error(f"Lỗi: {e}")
 
@@ -481,6 +631,32 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
 # ══════════════════════════════════════════════════
 elif menu == "🎯 Bài 5 — MIP 15 dự án":
     st.markdown('<div class="page-header"><h1>Bài 5 — MIP lựa chọn dự án chuyển đổi số</h1><p>Biến nhị phân · Ràng buộc tiên quyết · PuLP CBC</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 5.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Bộ KH-CN (sau hợp nhất 2025) xem xét <b>15 dự án ứng cử</b> cho chương trình chuyển đổi số quốc gia 2026-2030.
+    Tổng ngân sách <b>80.000 tỷ VND</b> (năm 1-2 tối đa 40.000 tỷ). Mỗi dự án có chi phí, lợi ích NPV và
+    ràng buộc đặc thù (loại trừ, tiên quyết). Cần xây dựng mô hình MIP để chọn tập dự án tối ưu.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 5.2 — Mô hình toán học (MIP nhị phân)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Biến quyết định</h4>
+    y(i) ∈ {0, 1}, i = 1..15 → y(i)=1 nếu chọn dự án i
+    <h4>Hàm mục tiêu</h4>
+    <div class="formula">max Σ B(i) · y(i)</div>
+    <b>Ràng buộc:</b>
+    <ul>
+      <li>(C1) Ngân sách 5 năm: Σ C(i)·y(i) ≤ 80.000</li>
+      <li>(C2) Ngân sách năm 1-2: Σ C1(i)·y(i) ≤ 40.000</li>
+      <li>(C3) Loại trừ trung tâm dữ liệu: y1 + y2 ≤ 1</li>
+      <li>(C4) Tiên quyết AI cần đào tạo: y8 ≤ y12; (C5) Bán dẫn cần đào tạo: y13 ≤ y12</li>
+      <li>(C6) Cân đối: y4 + y5 ≥ 1 (chính phủ số); y14 ≥ 1 (an ninh mạng bắt buộc)</li>
+      <li>(C7) Số lượng: 7 ≤ Σ y(i) ≤ 11</li>
+    </ul>
+    </div>""", unsafe_allow_html=True)
+
     try:
         from pulp import *
         P=list(range(1,16))
@@ -514,6 +690,30 @@ elif menu == "🎯 Bài 5 — MIP 15 dự án":
 # ══════════════════════════════════════════════════
 elif menu == "🏆 Bài 6 — TOPSIS 6 vùng":
     st.markdown('<div class="page-header"><h1>Bài 6 — TOPSIS xếp hạng 6 vùng KT-XH</h1><p>Chuẩn hoá vector · Ideal solution · Entropy weight</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 6.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo <b>Quyết định 127/QĐ-TTg</b> về Chiến lược quốc gia về AI đến 2030, Việt Nam đặt mục tiêu
+    trở thành <b>trung tâm AI của ASEAN</b>. Ngân sách có hạn nên cần lựa chọn vùng nào triển khai
+    trung tâm AI và sandbox dữ liệu trước. Bài toán áp dụng <b>TOPSIS</b> để xếp hạng 6 vùng theo mức độ sẵn sàng AI.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 6.2 — Mô hình toán học (TOPSIS)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Quy trình 5 bước TOPSIS</h4>
+    <b>B1.</b> Chuẩn hóa vector:
+    <div class="formula">r(ij) = x(ij) / sqrt(Σ x(ij)²)</div>
+    <b>B2.</b> Ma trận có trọng số: v(ij) = w(j) · r(ij)
+    <b>B3.</b> Lời giải lý tưởng dương A* (max lợi ích/min chi phí) và âm A⁻ (ngược lại)
+    <b>B4.</b> Khoảng cách Euclid:
+    <div class="formula">S*(i) = sqrt(Σ(v(ij) − v*(j))²) ; S⁻(i) = sqrt(Σ(v(ij) − v⁻(j))²)</div>
+    <b>B5.</b> Hệ số gần gũi tương đối (càng lớn càng tốt):
+    <div class="formula">C*(i) = S⁻(i) / (S*(i) + S⁻(i)), 0 ≤ C* ≤ 1</div>
+    <b>Tiêu chí lợi ích:</b> GRDP/người, FDI, Digital Index, AI Readiness, LĐ đào tạo, R&D, Internet.
+    <b>Tiêu chí chi phí:</b> Gini (càng thấp càng tốt).
+    </div>""", unsafe_allow_html=True)
+
     crit=['grdp_per_capita_million_VND','fdi_registered_billion_USD','digital_index_0_100','ai_readiness_0_100','trained_labor_pct','rd_intensity_pct','internet_penetration_pct','gini_coef']
     lbls=['GRDP/N','FDI','Digital','AI','LĐQĐ','R&D','Internet','Gini']; ib=[True,True,True,True,True,True,True,False]
     X=df_regions[crit].values.astype(float)
@@ -541,6 +741,28 @@ elif menu == "🏆 Bài 6 — TOPSIS 6 vùng":
 # ══════════════════════════════════════════════════
 elif menu == "🌐 Bài 7 — NSGA-II Pareto":
     st.markdown('<div class="page-header"><h1>Bài 7 — Tối ưu đa mục tiêu Pareto (NSGA-II)</h1><p>4 mục tiêu · Pareto front · Nghiệm thỏa hiệp TOPSIS</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 7.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Phát triển kinh tế số và AI ở Việt Nam đồng thời hướng tới <b>4 mục tiêu chiến lược</b> thường xung đột nhau:
+    (i) thúc đẩy tăng trưởng GDP nhanh; (ii) bảo đảm bao trùm xã hội, giảm bất bình đẳng vùng;
+    (iii) mục tiêu phát thải ròng bằng 0 vào 2050 (cam kết COP26); (iv) tăng cường an ninh dữ liệu, chủ quyền số.
+    Kết quả không phải nghiệm duy nhất mà là <b>tập nghiệm Pareto</b>.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 7.2 — Mô hình toán học (Đa mục tiêu NSGA-II)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>24 biến quyết định x(j,r), 4 hàm mục tiêu</h4>
+    <div class="formula">max f1 = Σ β(j,r)·x(j,r)   (GDP gain)</div>
+    <div class="formula">min f2 = G(x)   (bất bình đẳng vùng - xấp xỉ Gini/MAD)</div>
+    <div class="formula">min f3 = Σ e(r)·(x(I,r) + x(AI,r))   (phát thải CO2)</div>
+    <div class="formula">min f4 = Σ ρ(r)·x(AI,r) − Σ σ(r)·x(H,r)   (rủi ro an ninh dữ liệu ròng)</div>
+    <b>Thuật toán:</b> NSGA-II (Fast Non-dominated Sorting GA II), pop_size=80, n_gen tùy chọn.
+    <b>Chọn nghiệm thỏa hiệp:</b> áp dụng TOPSIS với trọng số chính sách (0,40 tăng trưởng;
+    0,25 bao trùm; 0,20 môi trường; 0,15 an ninh).
+    </div>""", unsafe_allow_html=True)
+
     try:
         from pymoo.core.problem import ElementwiseProblem
         from pymoo.algorithms.moo.nsga2 import NSGA2
@@ -585,6 +807,33 @@ elif menu == "🌐 Bài 7 — NSGA-II Pareto":
 # ══════════════════════════════════════════════════
 elif menu == "⏳ Bài 8 — Động 2026-2035":
     st.markdown('<div class="page-header"><h1>Bài 8 — Tối ưu động 2026–2035</h1><p>Cobb-Douglas · Động học vốn · CRRA welfare · SLSQP</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 8.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo Văn kiện Đại hội XIII, Việt Nam đặt mục tiêu trở thành nước <b>thu nhập trung bình cao vào 2030</b>
+    và <b>thu nhập cao vào 2045</b>. Cần thiết kế chiến lược phân bổ vốn dài hạn (2026-2035), cân bằng giữa
+    tăng trưởng, chuyển đổi số, AI và chất lượng nhân lực - có xét hiệu ứng tích lũy và độ trễ.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 8.2 — Mô hình toán học (Quy hoạch động NLP)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Hàm mục tiêu - tối đa hóa phúc lợi xã hội liên thời gian</h4>
+    <div class="formula">max Σ(t) ρ^t · U(C(t)), với U(C) = (C^(1−γ) − 1)/(1−γ), γ=1,5</div>
+    <h4>Hàm sản xuất</h4>
+    <div class="formula">Y(t) = A(t)·K^0.33·L^0.42·D^0.10·AI^0.08·H^0.07</div>
+    <h4>Động học tích lũy vốn</h4>
+    <ul>
+      <li>K(t+1) = (1−δK)·K(t) + I_K(t), δK=0,05</li>
+      <li>D(t+1) = (1−δD)·D(t) + I_D(t), δD=0,12</li>
+      <li>AI(t+1) = (1−δAI)·AI(t) + I_AI(t), δAI=0,15</li>
+      <li>H(t+1) = H(t) + θH·I_H(t) − μ·H(t), θH=0,8, μ=0,02</li>
+    </ul>
+    <h4>TFP nội sinh</h4>
+    <div class="formula">A(t+1) = A(t)·(1 + φ1·D + φ2·AI + φ3·H)</div>
+    <b>Ràng buộc ngân sách:</b> C(t) + I_K + I_D + I_AI + I_H ≤ Y(t); ρ=0,97; giải bằng SLSQP.
+    </div>""", unsafe_allow_html=True)
+
     from scipy.optimize import minimize as spmin
     al8,be8,ga8,de8,th8=0.33,0.42,0.10,0.08,0.07; dK,dD,dAI=0.05,0.12,0.15; thH,mu=0.8,0.02
     phi1,phi2,phi3=0.003,0.002,0.004; rho8=0.97; gcr=1.5; T8=10
@@ -628,6 +877,32 @@ elif menu == "⏳ Bài 8 — Động 2026-2035":
 # ══════════════════════════════════════════════════
 elif menu == "👷 Bài 9 — Lao động & AI":
     st.markdown('<div class="page-header"><h1>Bài 9 — Tác động AI tới thị trường lao động</h1><p>NetJob · Thay thế · Đào tạo lại · LP tối ưu</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 9.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Theo ILO Vietnam 2024 và OECD AI Employment Report 2024, khoảng <b>30-50% việc làm</b> tại Việt Nam
+    có nguy cơ bị tự động hóa một phần trong 10 năm tới (đặc biệt chế biến chế tạo, bán buôn-bán lẻ, logistics).
+    Nhưng AI cũng tạo việc làm mới. Bài toán: phân bổ <b>30.000 tỷ</b> cho đào tạo lại lao động để
+    bảo đảm <b>NetJob ròng dương</b> cho tất cả ngành.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 9.2 — Mô hình toán học (LP NetJob)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Việc làm ròng theo ngành i</h4>
+    <div class="formula">NetJob(i) = NewJob(i) + UpgradeJob(i) − DisplacedJob(i)</div>
+    <ul>
+      <li>NewJob = a1·x_AI + a2·x_D (việc làm mới từ AI & số hóa)</li>
+      <li>UpgradeJob = b1·x_H (nâng cấp nhờ đào tạo)</li>
+      <li>DisplacedJob = c1·risk·x_AI (việc bị thay thế)</li>
+      <li>RetrainCapacity = d1·x_H (năng lực đào tạo lại)</li>
+    </ul>
+    <h4>Bài toán tối ưu</h4>
+    <div class="formula">max Σ NetJob(i)</div>
+    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i
+    <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại")
+    </div>""", unsafe_allow_html=True)
+
     from scipy.optimize import linprog
     N=8; secs=['Nông-LT','CN cbct','Xây dựng','BBL','TC-NH','Logistics','CNTT','GD-ĐT']
     risk=np.array([18,42,25,38,52,35,28,22])/100; a1=np.array([8.5,32.5,12.8,22.4,45.8,28.5,62.5,18.5])
@@ -657,6 +932,33 @@ elif menu == "👷 Bài 9 — Lao động & AI":
 # ══════════════════════════════════════════════════
 elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown('<div class="page-header"><h1>Bài 10 — Quy hoạch ngẫu nhiên 2 giai đoạn</h1><p>First-stage · Recourse · VSS · EVPI · Pyomo</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 10.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Việt Nam có độ mở thương mại rất cao (XNK/GDP ≈ 180% năm 2025), tăng trưởng phụ thuộc lớn vào
+    kịch bản kinh tế toàn cầu. Khi hoạch định chính sách đầu tư số 2026-2030, Chính phủ phải đưa ra
+    <b>quyết định first-stage</b> (kế hoạch ngân sách) khi <b>chưa biết chắc kịch bản tương lai</b>.
+    Bài toán áp dụng quy hoạch ngẫu nhiên 2 giai đoạn.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 10.2 — Mô hình toán học (Two-stage Stochastic Programming)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Cấu trúc 2 giai đoạn</h4>
+    <b>Giai đoạn 1 (here-and-now):</b> quyết định x = (x_I, x_D, x_AI, x_H) trước khi biết kịch bản
+    <div class="formula">Σ x(j) ≤ 65.000 (giữ 15.000 dự phòng)</div>
+    <b>Giai đoạn 2 (recourse):</b> điều chỉnh y(s) sau khi kịch bản s hiện thực hóa
+    <div class="formula">Σ y(s,j) ≤ 15.000 ∀s ; y(AI,s) ≤ 0,5·x_H ∀s</div>
+    <h4>Hàm mục tiêu</h4>
+    <div class="formula">max Σ β(j)·x(j) + Σ p(s)·[Σ β(s,j)·y(s,j)]</div>
+    <b>4 kịch bản:</b> Lạc quan (p=0,30) · Cơ sở (p=0,45) · Bi quan (p=0,20) · Khủng hoảng (p=0,05)
+    <h4>Chỉ số đánh giá</h4>
+    <ul>
+      <li><b>VSS</b> (Value of Stochastic Solution): lợi ích khi cân nhắc bất định</li>
+      <li><b>EVPI</b> (Expected Value of Perfect Information): giá trị thông tin hoàn hảo</li>
+    </ul>
+    </div>""", unsafe_allow_html=True)
+
     try:
         import pyomo.environ as pyo
         J=['I','D','AI','H']; S=['s1','s2','s3','s4']
@@ -696,6 +998,33 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
 # ══════════════════════════════════════════════════
 elif menu == "🤖 Bài 11 — Q-learning RL":
     st.markdown('<div class="page-header"><h1>Bài 11 — Q-learning chính sách kinh tế thích nghi</h1><p>MDP · 81 trạng thái · 5 hành động · Epsilon-greedy</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 11.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Vấn đề đặt ra</h4>
+    Nền kinh tế Việt Nam có thể được xem như <b>môi trường</b>, chính sách là <b>hành động</b>,
+    phần thưởng phản ánh <b>phúc lợi xã hội</b>. Học tăng cường cho phép chính sách <b>thích nghi</b>
+    theo trạng thái kinh tế hiện tại, thay vì cố định như LP.
+    <br><br>
+    <b>Lưu ý:</b> AI hỗ trợ ra quyết định KHÔNG thay thế trách nhiệm chính trị - bài này minh họa kỹ thuật.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 11.2 — Mô hình toán học (MDP + Q-learning)</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>Markov Decision Process</h4>
+    <b>Trạng thái (3^4 = 81):</b> GDP growth, Digital index, AI capacity, Unemployment risk - mỗi cái 3 mức {low, medium, high}
+    <b>5 hành động (chiến lược phân bổ K/D/AI/H):</b>
+    <ul>
+      <li>a0 Truyền thống (70/10/10/10) · a1 Cân bằng (40/25/15/20)</li>
+      <li>a2 Số hóa nhanh (25/45/15/15) · a3 AI dẫn dắt (20/20/45/15) · a4 Bao trùm (30/20/10/40)</li>
+    </ul>
+    <h4>Phần thưởng (welfare)</h4>
+    <div class="formula">R = 0,40·ΔGDP − 0,25·ΔUnemploy − 0,20·CyberRisk − 0,15·Emission</div>
+    <h4>Cập nhật Q-table (Bellman)</h4>
+    <div class="formula">Q(s,a) ← Q(s,a) + α·[r + γ·max Q(s',a') − Q(s,a)]</div>
+    <b>Tham số:</b> α=0,10 · γ=0,95 · ε-greedy giảm dần · 10 năm/episode
+    </div>""", unsafe_allow_html=True)
+
     nep=st.slider("Số episodes",2000,10000,5000,1000)
     alloc11={0:np.array([0.70,0.10,0.10,0.10]),1:np.array([0.40,0.25,0.15,0.20]),2:np.array([0.25,0.45,0.15,0.15]),3:np.array([0.20,0.20,0.45,0.15]),4:np.array([0.30,0.20,0.10,0.40])}
     anames=["Truyền thống","Cân bằng","Số hóa nhanh","AI dẫn dắt","Bao trùm"]
@@ -733,6 +1062,29 @@ elif menu == "🤖 Bài 11 — Q-learning RL":
 # ══════════════════════════════════════════════════
 elif menu == "🧠 Bài 12 — AIDEOM tích hợp":
     st.markdown('<div class="page-header"><h1>Bài 12 — AIDEOM-VN Nguyên mẫu tổng hợp</h1><p>6 Module · 5 Kịch bản chính sách · Dashboard ra quyết định</p></div>', unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">🇻🇳 12.1 — Bối cảnh & Mục tiêu đồ án</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="context-box">
+    <h4>Đồ án tổng kết môn học</h4>
+    Tích hợp các kỹ thuật đã học (Bài 1-11) thành hệ thống <b>AIDEOM-VN</b> đầy đủ <b>6 module</b> liên kết,
+    với dashboard hỗ trợ ra quyết định trên <b>5 kịch bản chính sách</b>. Hệ thống cho phép nhà hoạch định
+    so sánh định lượng các phương án phát triển kinh tế số Việt Nam giai đoạn 2026-2030.
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="sec-title">📐 12.2 — Kiến trúc mô hình AIDEOM-VN</div>', unsafe_allow_html=True)
+    st.markdown("""<div class="model-box">
+    <h4>6 Module tích hợp theo pipeline</h4>
+    <ul>
+      <li><b>M1 Dự báo kinh tế:</b> Cobb-Douglas + TFP (Bài 1) → GDP, TFP 2026-2030</li>
+      <li><b>M2 Đánh giá sẵn sàng số:</b> TOPSIS + Entropy (Bài 6) → bản đồ Digital Index + AI Readiness</li>
+      <li><b>M3 Tối ưu phân bổ:</b> LP 24 biến + công bằng (Bài 4) → phân bổ ngành-vùng-thời gian</li>
+      <li><b>M4 Mô phỏng lao động:</b> NetJob (Bài 9) → việc làm ròng từng ngành</li>
+      <li><b>M5 Đánh giá rủi ro:</b> Đa mục tiêu (Bài 7) + Stochastic (Bài 10) → cyber/môi trường/phụ thuộc</li>
+      <li><b>M6 Dashboard ra QĐ:</b> trực quan 5 kịch bản, cảnh báo, khuyến nghị</li>
+    </ul>
+    <h4>5 Kịch bản chính sách</h4>
+    <div class="formula">S1 Truyền thống · S2 Số hóa nhanh · S3 AI dẫn dắt · S4 Bao trùm số · S5 Tối ưu cân bằng</div>
+    </div>""", unsafe_allow_html=True)
 
     # Dữ liệu kịch bản
     scen12={"S1 Truyền thống":{"K":0.70,"D":0.10,"AI":0.10,"H":0.10},
