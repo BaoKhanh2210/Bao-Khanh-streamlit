@@ -479,8 +479,25 @@ def _nav(idx):
 st.markdown("""
 <style>
 
-/* ── Sidebar logo — chỉ chữ, không icon ── */
-[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p:first-child {
+/* ── Sidebar logo — vẽ icon 3 thanh bằng CSS thuần, KHÔNG dùng ký tự icon ── */
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type {
+  position: relative !important;
+  padding-left: 34px !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 14px !important;
+  width: 22px !important;
+  height: 16px !important;
+  background:
+    linear-gradient(#4895ef, #4895ef) 0 0%/100% 3px no-repeat,
+    linear-gradient(#2ec4b6, #2ec4b6) 0 50%/72% 3px no-repeat,
+    linear-gradient(#e63946, #e63946) 0 100%/88% 3px no-repeat !important;
+  border-radius: 2px !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:first-of-type p {
   font-size: 1.2rem !important;
   font-weight: 900 !important;
   background: linear-gradient(90deg, #4895ef 0%, #2ec4b6 50%, #e63946 100%) !important;
@@ -490,6 +507,9 @@ st.markdown("""
   letter-spacing: -.01em !important;
   margin: 10px 0 2px !important;
   line-height: 1.3 !important;
+}
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"]:first-of-type {
+  padding-left: 34px !important;
 }
 [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
   font-size: .65rem !important;
