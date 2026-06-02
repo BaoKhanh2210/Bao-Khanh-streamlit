@@ -60,37 +60,9 @@ html, body, .stApp {
   color: var(--txt-hi) !important;
 }
 
-/* ── Ẩn Streamlit default header (toolbar trên cùng) ── */
+/* ── Header Streamlit: làm trong suốt, giữ functional ── */
 header[data-testid="stHeader"] {
-  background: var(--bg-deep) !important;
-  height: 0 !important;
-  visibility: hidden !important;
-}
-[data-testid="stToolbar"] { display: none !important; }
-
-/* ── Ẩn mọi Material Icon ghost text (Streamlit Cloud bug fix) ── */
-.material-icons, .material-icons-outlined,
-.material-symbols-rounded, .material-symbols-outlined,
-.material-symbols-sharp,
-[class*="material-icons"], [class*="material-symbols"] {
-  font-family: 'Material Symbols Rounded', 'Material Icons' !important;
-  font-feature-settings: 'liga' !important;
-  -webkit-font-feature-settings: 'liga' !important;
-  font-size: 0 !important;
-  visibility: hidden !important;
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
-}
-
-/* ── Ẩn collapse button icon ghost ở sidebar ── */
-[data-testid="stSidebarCollapsedControl"] {
-  background: var(--bg-deep) !important;
-}
-[data-testid="stSidebarCollapsedControl"] button {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 8px !important;
+  background: transparent !important;
 }
 
 /* ─── ALL TEXT OVERRIDE ─────────────────── */
@@ -594,17 +566,11 @@ with st.sidebar:
     st.markdown("**AIDEOM-VN**")
     st.caption("Mô hình ra quyết định phát triển kinh tế Việt Nam trong kỉ nguyên AI")
 
-    st.markdown(
-        "<div style='font-size:.78rem;font-weight:700;color:#a8bbd4;"
-        "margin:14px 0 6px;letter-spacing:.04em;'>DANH SÁCH BÀI</div>",
-        unsafe_allow_html=True
-    )
     page = st.radio(
-        label="page_nav",
+        "Chọn bài",
         options=PAGES,
         index=st.session_state.page_idx,
         key="page_radio",
-        label_visibility="collapsed",
     )
     st.session_state.page_idx = PAGES.index(page)
 
