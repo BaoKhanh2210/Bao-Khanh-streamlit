@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 
 # PAGE CONFIG
 st.set_page_config(
-    page_title="AIDEOM-VN | Mô hình ra quyết định",
+    page_title="VN AIDEOM-VN | Mô hình ra quyết định",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -66,6 +66,29 @@ html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 .sidebar-logo { text-align: center; padding: 18px 14px 14px; border-bottom: 1px solid rgba(144,202,249,0.15); margin-bottom: 10px; }
 .sidebar-logo .title { font-size: 1.05rem; font-weight: 700; color: #e3f2fd; letter-spacing: 1px; }
 .sidebar-logo .sub { font-size: 0.68rem; color: #90caf9; letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+/* ── Hero card trang chủ (theo app gốc) ── */
+.hero-card {
+    background: linear-gradient(135deg, rgba(14,165,233,0.22), rgba(139,92,246,0.20), rgba(34,197,94,0.13));
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px; padding: 30px 34px; margin-bottom: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+}
+.hero-title { font-size: 42px; font-weight: 900; line-height: 1.15; margin-bottom: 10px; color: #0f2027; }
+.hero-subtitle { font-size: 20px; font-weight: 650; opacity: 0.92; margin-bottom: 12px; color: #1565c0; }
+.hero-note { font-size: 16px; line-height: 1.65; opacity: 0.88; color: #1a2332; }
+.badge {
+    display: inline-block; padding: 7px 12px; border-radius: 999px;
+    background: rgba(21,101,192,0.10); border: 1px solid rgba(21,101,192,0.18);
+    margin-right: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 650; color: #1565c0;
+}
+.section-card {
+    background: #f8fbff; border: 1px solid rgba(21,101,192,0.10);
+    border-radius: 18px; padding: 18px 20px; margin-bottom: 16px;
+}
+.section-card h4 { color: #1a237e; margin: 6px 0; }
+.small-muted { font-size: 14px; opacity: 0.85; line-height: 1.55; color: #455a64; }
+.big-number { font-size: 30px; font-weight: 850; color: #1565c0; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -73,28 +96,28 @@ html, body, [class*="css"] { font-family: 'IBM Plex Sans', sans-serif; }
 with st.sidebar:
     st.markdown("""
     <div class="sidebar-logo">
-        <div style="font-size:2rem">📊</div>
-        <div class="title">AIDEOM-VN</div>
-        <div class="sub">Mô hình ra quyết định</div>
+        <div style="font-size:2rem">🇻🇳</div>
+        <div class="title">VN AIDEOM-VN</div>
+        <div class="sub">Decision Optimization Model</div>
     </div>
     """, unsafe_allow_html=True)
 
-    menu = st.selectbox(
-        "CHỌN BÀI / MODULE",
+    menu = st.radio(
+        "CHỌN BÀI",
         [
             "🏠 Trang chủ",
-            "Bài 1 — Cobb-Douglas",
-            "Bài 2 — Phân bổ ngân sách",
-            "Bài 3 — Chỉ số ưu tiên ngành",
-            "Bài 4 — LP phân bổ vùng miền",
-            "Bài 5 — MIP chọn dự án",
-            "Bài 6 — TOPSIS xếp hạng vùng",
-            "Bài 7 — NSGA-II đa mục tiêu",
-            "Bài 8 — Tối ưu động",
-            "Bài 9 — Tác động AI & lao động",
-            "Bài 10 — Quy hoạch ngẫu nhiên",
-            "Bài 11 — Q-learning",
-            "Bài 12 — AIDEOM-VN tổng hợp",
+            "🌱 Bài 1 — Cobb-Douglas + AI",
+            "💰 Bài 2 — LP ngân sách số",
+            "📊 Bài 3 — Priority 10 ngành",
+            "🗺️ Bài 4 — LP ngành-vùng",
+            "🎯 Bài 5 — MIP 15 dự án",
+            "🏆 Bài 6 — TOPSIS 6 vùng",
+            "🌐 Bài 7 — NSGA-II Pareto",
+            "⏳ Bài 8 — Động 2026-2035",
+            "👷 Bài 9 — Lao động & AI",
+            "🎲 Bài 10 — Stochastic SP",
+            "🤖 Bài 11 — Q-learning RL",
+            "🧠 Bài 12 — AIDEOM tích hợp",
         ],
     )
     st.markdown("""
@@ -158,14 +181,65 @@ def show_fig(fig):
 # TRANG CHỦ
 # ══════════════════════════════════════════════════
 if menu == "🏠 Trang chủ":
-    st.markdown('<div class="page-header"><h1>📊 AIDEOM-VN Dashboard</h1><p>Các mô hình ra quyết định phát triển kinh tế Việt Nam trong kỷ nguyên AI</p></div>', unsafe_allow_html=True)
-    c1,c2,c3,c4 = st.columns(4)
-    c1.metric("GDP 2025","12.847,6 nghìn tỷ","+8,02%")
-    c2.metric("Kinh tế số/GDP","19,5%","+1,2%")
-    c3.metric("DN công nghệ số","80.052","+8,5%")
-    c4.metric("GII 2025","#44/139","Giữ vị trí")
+    # ── HERO SECTION ──
+    st.markdown(
+        '''
+        <div class="hero-card">
+            <div class="hero-title">🇻🇳 AIDEOM-VN</div>
+            <div class="hero-subtitle">AI-Driven Decision Optimization Model for Vietnam</div>
+            <div class="hero-note">
+                Dashboard mô phỏng 12 bài toán ra quyết định phát triển kinh tế Việt Nam trong kỷ nguyên AI.
+                Hệ thống kết hợp <b>Python</b>, <b>tối ưu hóa</b>, <b>học tăng cường</b>,
+                <b>mô phỏng chính sách</b> để chuyển bài toán kinh tế thành mô hình định lượng có thể kiểm chứng.
+            </div>
+            <br>
+            <span class="badge">🐍 Python</span>
+            <span class="badge">📊 Streamlit Dashboard</span>
+            <span class="badge">🧮 Optimization</span>
+            <span class="badge">🤖 Reinforcement Learning</span>
+            <span class="badge">🇻🇳 Vietnam 2020–2025 Data</span>
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
 
-    st.markdown('<div class="sec-title">📋 Dữ liệu gốc</div>', unsafe_allow_html=True)
+    # ── QUICK MACRO METRICS ──
+    st.subheader("📌 Bức tranh kinh tế Việt Nam tham chiếu nhanh 2024–2025")
+    c1,c2,c3,c4 = st.columns(4)
+    c1.metric("GDP 2025","514,0 tỷ USD","+8,02%")
+    c2.metric("Kinh tế số/GDP","≈19,5%","+1,2 điểm %")
+    c3.metric("FDI giải ngân 2025","27,6 tỷ USD","+8,9%")
+    c4.metric("GDP/người 2025","5.026 USD","+6,9%")
+    c5,c6,c7,c8 = st.columns(4)
+    c5.metric("GDP 2025","12.847,6 nghìn tỷ VND")
+    c6.metric("DN công nghệ số","80,1 nghìn")
+    c7.metric("GII 2025","Hạng 44/139")
+    c8.metric("KH-CN/GDP","≈2,49%")
+    st.caption("Các chỉ tiêu lấy theo bảng số liệu tham chiếu nhanh trong đề bài, làm tròn để phục vụ mô phỏng và giảng dạy.")
+
+    # ── MỤC TIÊU WEB APP ──
+    st.divider()
+    st.subheader("🎯 Mục tiêu của web app")
+    g1,g2,g3 = st.columns(3)
+    with g1:
+        st.markdown('''<div class="section-card"><div class="big-number">①</div>
+        <h4>Chuyển chính sách thành mô hình</h4>
+        <p class="small-muted">Mỗi bài biến một vấn đề phát triển kinh tế Việt Nam thành mô hình toán học:
+        hàm sản xuất, LP, MIP, TOPSIS, Pareto, stochastic programming và Q-learning.</p></div>''', unsafe_allow_html=True)
+    with g2:
+        st.markdown('''<div class="section-card"><div class="big-number">②</div>
+        <h4>Chạy thử kịch bản tương tác</h4>
+        <p class="small-muted">Người dùng có thể chỉnh tham số, ngân sách, trọng số, ràng buộc và cú sốc;
+        sau đó xem bảng kết quả, biểu đồ và thay đổi chính sách tương ứng.</p></div>''', unsafe_allow_html=True)
+    with g3:
+        st.markdown('''<div class="section-card"><div class="big-number">③</div>
+        <h4>Giải nghĩa kết quả chính sách</h4>
+        <p class="small-muted">Diễn giải kết quả theo góc nhìn chính sách công:
+        tăng trưởng, bao trùm, rủi ro, công bằng vùng và trách nhiệm giải trình.</p></div>''', unsafe_allow_html=True)
+
+    # ── DỮ LIỆU GỐC ──
+    st.divider()
+    st.markdown('<div class="sec-title">📋 Dữ liệu gốc Việt Nam 2020–2025</div>', unsafe_allow_html=True)
     t1,t2,t3 = st.tabs(["Vĩ mô 2020–2025","10 ngành 2024","6 vùng KT-XH"])
     with t1:
         st.dataframe(df_macro, use_container_width=True)
@@ -181,7 +255,28 @@ if menu == "🏠 Trang chủ":
     with t3:
         st.dataframe(df_regions, use_container_width=True)
 
-    st.markdown('<div class="sec-title">🗺️ Cấu trúc 12 bài tập</div>', unsafe_allow_html=True)
+    # ── BẢN ĐỒ 12 BÀI ──
+    st.divider()
+    st.subheader("🗺️ Bản đồ 12 bài theo 4 cấp độ")
+    level_df = pd.DataFrame({
+        "Cấp độ": ["🟢 DỄ","🟢 DỄ","🟢 DỄ","🟡 TRUNG BÌNH","🟡 TRUNG BÌNH","🟡 TRUNG BÌNH",
+                   "🟠 KHÁ KHÓ","🟠 KHÁ KHÓ","🟠 KHÁ KHÓ","🔴 KHÓ","🔴 KHÓ","🔴 KHÓ"],
+        "Bài": ["Bài 1","Bài 2","Bài 3","Bài 4","Bài 5","Bài 6","Bài 7","Bài 8","Bài 9","Bài 10","Bài 11","Bài 12"],
+        "Tên bài": ["Cobb-Douglas + AI","LP ngân sách số","Priority 10 ngành","LP ngành-vùng","MIP 15 dự án",
+                    "TOPSIS 6 vùng","NSGA-II Pareto","Tối ưu động 2026–2035","Lao động & AI",
+                    "Stochastic Programming","Q-learning RL","AIDEOM tích hợp"],
+        "Trọng tâm": ["TFP, growth accounting, GDP 2030","Phân bổ 100 nghìn tỷ cho I/AI/H/R&D",
+                      "Xếp hạng ngành ưu tiên chuyển đổi số","Công bằng vùng miền trong phân bổ ngân sách",
+                      "Chọn danh mục dự án số tối ưu","Xếp hạng vùng sẵn sàng AI",
+                      "Đánh đổi tăng trưởng - bao trùm - môi trường - dữ liệu","Lộ trình đầu tư nhiều năm",
+                      "Tác động AI đến lao động và kỹ năng","Tối ưu trong điều kiện bất định",
+                      "Chính sách thích nghi bằng Q-learning","Dashboard tích hợp và khuyến nghị chính sách"],
+        "Công cụ chính": ["numpy, pandas","scipy.optimize, PuLP","pandas, min-max, heatmap","PuLP, CVXPY",
+                          "PuLP/CBC","TOPSIS, Entropy","pymoo","cvxpy, numpy","mô phỏng kịch bản",
+                          "pyomo / scipy","gymnasium, RL","streamlit dashboard"],
+    })
+    st.dataframe(level_df, use_container_width=True, hide_index=True)
+
     info = [("DỄ","Bài 1–3","Cobb-Douglas, LP, MCDM","#42a5f5"),
             ("TRUNG BÌNH","Bài 4–6","LP đầy đủ, MIP, TOPSIS","#26c6da"),
             ("KHÁ KHÓ","Bài 7–9","NSGA-II, Tối ưu động, Lao động","#ffa726"),
@@ -190,10 +285,29 @@ if menu == "🏠 Trang chủ":
     for col,(level,bai,desc,color) in zip(cols,info):
         col.markdown(f'<div style="border-top:4px solid {color};background:#f8fbff;border-radius:8px;padding:12px 14px"><div style="font-size:9px;font-weight:700;color:{color};letter-spacing:2px">{level}</div><div style="font-size:1rem;font-weight:700;color:#1a237e;margin:3px 0">{bai}</div><div style="font-size:0.78rem;color:#546e7a">{desc}</div></div>', unsafe_allow_html=True)
 
+    # ── DỮ LIỆU & CÁCH DÙNG ──
+    st.divider()
+    st.subheader("📁 Dữ liệu và cách sử dụng")
+    d1,d2 = st.columns([1.2,1])
+    with d1:
+        st.markdown('''<div class="section-card"><h4>📦 Bộ dữ liệu đi kèm</h4>
+        <ul>
+        <li><b>vietnam_macro_2020_2025.csv</b>: GDP, FDI, xuất nhập khẩu, lạm phát, năng suất lao động, kinh tế số/GDP.</li>
+        <li><b>vietnam_sectors_2024.csv</b>: 10 ngành, tăng trưởng, xuất khẩu, lao động, AI readiness, rủi ro tự động hóa.</li>
+        <li><b>vietnam_regions_2024.csv</b>: 6 vùng, GRDP/người, FDI, digital index, AI readiness, Gini, R&D.</li>
+        </ul></div>''', unsafe_allow_html=True)
+    with d2:
+        st.markdown('''<div class="section-card"><h4>🚀 Cách dùng nhanh</h4>
+        <p class="small-muted">1. Chọn một bài ở menu bên trái.<br>
+        2. Đọc bối cảnh và mô hình toán học.<br>
+        3. Điều chỉnh tham số bằng slider.<br>
+        4. Xem bảng kết quả, biểu đồ và nhận xét.</p></div>''', unsafe_allow_html=True)
+    st.success("Gợi ý: bắt đầu từ Bài 1 → Bài 2 → Bài 3 để hiểu logic tăng trưởng, tối ưu ngân sách và xếp hạng ưu tiên trước khi sang các bài khó hơn.")
+
 # ══════════════════════════════════════════════════
 # BÀI 1 — COBB-DOUGLAS
 # ══════════════════════════════════════════════════
-elif menu == "Bài 1 — Cobb-Douglas":
+elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
     st.markdown('<div class="page-header"><h1>Bài 1 — Hàm sản xuất Cobb-Douglas mở rộng</h1><p>TFP · Dự báo GDP · Phân rã tăng trưởng · Kịch bản 2030</p></div>', unsafe_allow_html=True)
     st.markdown('<div class="info-box">Y = A · K<sup>0.33</sup> · L<sup>0.42</sup> · D<sup>0.10</sup> · AI<sup>0.08</sup> · H<sup>0.07</sup></div>', unsafe_allow_html=True)
 
@@ -255,7 +369,7 @@ elif menu == "Bài 1 — Cobb-Douglas":
 # ══════════════════════════════════════════════════
 # BÀI 2 — PHÂN BỔ NGÂN SÁCH
 # ══════════════════════════════════════════════════
-elif menu == "Bài 2 — Phân bổ ngân sách":
+elif menu == "💰 Bài 2 — LP ngân sách số":
     st.markdown('<div class="page-header"><h1>Bài 2 — Phân bổ ngân sách 4 hạng mục đầu tư số</h1><p>LP · Shadow price · Độ nhạy ngân sách</p></div>', unsafe_allow_html=True)
     from scipy.optimize import linprog
     c=[-0.85,-1.20,-0.95,-1.35]
@@ -289,7 +403,7 @@ elif menu == "Bài 2 — Phân bổ ngân sách":
 # ══════════════════════════════════════════════════
 # BÀI 3 — CHỈ SỐ ƯU TIÊN NGÀNH
 # ══════════════════════════════════════════════════
-elif menu == "Bài 3 — Chỉ số ưu tiên ngành":
+elif menu == "📊 Bài 3 — Priority 10 ngành":
     st.markdown('<div class="page-header"><h1>Bài 3 — Chỉ số ưu tiên ngành Priorityᵢ</h1><p>Min-max · Trọng số · Phân tích độ nhạy</p></div>', unsafe_allow_html=True)
     df=df_sectors.copy(); df["labor_productivity"]=(df["gdp_share_2024_pct"]/100)*11511.9/df["labor_million"]
     def norm_good(x): return (x-x.min())/(x.max()-x.min())
@@ -319,7 +433,7 @@ elif menu == "Bài 3 — Chỉ số ưu tiên ngành":
 # ══════════════════════════════════════════════════
 # BÀI 4 — LP VÙNG MIỀN
 # ══════════════════════════════════════════════════
-elif menu == "Bài 4 — LP phân bổ vùng miền":
+elif menu == "🗺️ Bài 4 — LP ngành-vùng":
     st.markdown('<div class="page-header"><h1>Bài 4 — LP phân bổ ngân sách theo vùng miền</h1><p>24 biến · Công bằng vùng · PuLP CBC</p></div>', unsafe_allow_html=True)
     try:
         import pulp
@@ -365,7 +479,7 @@ elif menu == "Bài 4 — LP phân bổ vùng miền":
 # ══════════════════════════════════════════════════
 # BÀI 5 — MIP
 # ══════════════════════════════════════════════════
-elif menu == "Bài 5 — MIP chọn dự án":
+elif menu == "🎯 Bài 5 — MIP 15 dự án":
     st.markdown('<div class="page-header"><h1>Bài 5 — MIP lựa chọn dự án chuyển đổi số</h1><p>Biến nhị phân · Ràng buộc tiên quyết · PuLP CBC</p></div>', unsafe_allow_html=True)
     try:
         from pulp import *
@@ -398,7 +512,7 @@ elif menu == "Bài 5 — MIP chọn dự án":
 # ══════════════════════════════════════════════════
 # BÀI 6 — TOPSIS
 # ══════════════════════════════════════════════════
-elif menu == "Bài 6 — TOPSIS xếp hạng vùng":
+elif menu == "🏆 Bài 6 — TOPSIS 6 vùng":
     st.markdown('<div class="page-header"><h1>Bài 6 — TOPSIS xếp hạng 6 vùng KT-XH</h1><p>Chuẩn hoá vector · Ideal solution · Entropy weight</p></div>', unsafe_allow_html=True)
     crit=['grdp_per_capita_million_VND','fdi_registered_billion_USD','digital_index_0_100','ai_readiness_0_100','trained_labor_pct','rd_intensity_pct','internet_penetration_pct','gini_coef']
     lbls=['GRDP/N','FDI','Digital','AI','LĐQĐ','R&D','Internet','Gini']; ib=[True,True,True,True,True,True,True,False]
@@ -425,7 +539,7 @@ elif menu == "Bài 6 — TOPSIS xếp hạng vùng":
 # ══════════════════════════════════════════════════
 # BÀI 7 — NSGA-II
 # ══════════════════════════════════════════════════
-elif menu == "Bài 7 — NSGA-II đa mục tiêu":
+elif menu == "🌐 Bài 7 — NSGA-II Pareto":
     st.markdown('<div class="page-header"><h1>Bài 7 — Tối ưu đa mục tiêu Pareto (NSGA-II)</h1><p>4 mục tiêu · Pareto front · Nghiệm thỏa hiệp TOPSIS</p></div>', unsafe_allow_html=True)
     try:
         from pymoo.core.problem import ElementwiseProblem
@@ -469,7 +583,7 @@ elif menu == "Bài 7 — NSGA-II đa mục tiêu":
 # ══════════════════════════════════════════════════
 # BÀI 8 — TỐI ƯU ĐỘNG
 # ══════════════════════════════════════════════════
-elif menu == "Bài 8 — Tối ưu động":
+elif menu == "⏳ Bài 8 — Động 2026-2035":
     st.markdown('<div class="page-header"><h1>Bài 8 — Tối ưu động 2026–2035</h1><p>Cobb-Douglas · Động học vốn · CRRA welfare · SLSQP</p></div>', unsafe_allow_html=True)
     from scipy.optimize import minimize as spmin
     al8,be8,ga8,de8,th8=0.33,0.42,0.10,0.08,0.07; dK,dD,dAI=0.05,0.12,0.15; thH,mu=0.8,0.02
@@ -512,7 +626,7 @@ elif menu == "Bài 8 — Tối ưu động":
 # ══════════════════════════════════════════════════
 # BÀI 9 — LAO ĐỘNG
 # ══════════════════════════════════════════════════
-elif menu == "Bài 9 — Tác động AI & lao động":
+elif menu == "👷 Bài 9 — Lao động & AI":
     st.markdown('<div class="page-header"><h1>Bài 9 — Tác động AI tới thị trường lao động</h1><p>NetJob · Thay thế · Đào tạo lại · LP tối ưu</p></div>', unsafe_allow_html=True)
     from scipy.optimize import linprog
     N=8; secs=['Nông-LT','CN cbct','Xây dựng','BBL','TC-NH','Logistics','CNTT','GD-ĐT']
@@ -541,7 +655,7 @@ elif menu == "Bài 9 — Tác động AI & lao động":
 # ══════════════════════════════════════════════════
 # BÀI 10 — QUY HOẠCH NGẪU NHIÊN
 # ══════════════════════════════════════════════════
-elif menu == "Bài 10 — Quy hoạch ngẫu nhiên":
+elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown('<div class="page-header"><h1>Bài 10 — Quy hoạch ngẫu nhiên 2 giai đoạn</h1><p>First-stage · Recourse · VSS · EVPI · Pyomo</p></div>', unsafe_allow_html=True)
     try:
         import pyomo.environ as pyo
@@ -580,7 +694,7 @@ elif menu == "Bài 10 — Quy hoạch ngẫu nhiên":
 # ══════════════════════════════════════════════════
 # BÀI 11 — Q-LEARNING
 # ══════════════════════════════════════════════════
-elif menu == "Bài 11 — Q-learning":
+elif menu == "🤖 Bài 11 — Q-learning RL":
     st.markdown('<div class="page-header"><h1>Bài 11 — Q-learning chính sách kinh tế thích nghi</h1><p>MDP · 81 trạng thái · 5 hành động · Epsilon-greedy</p></div>', unsafe_allow_html=True)
     nep=st.slider("Số episodes",2000,10000,5000,1000)
     alloc11={0:np.array([0.70,0.10,0.10,0.10]),1:np.array([0.40,0.25,0.15,0.20]),2:np.array([0.25,0.45,0.15,0.15]),3:np.array([0.20,0.20,0.45,0.15]),4:np.array([0.30,0.20,0.10,0.40])}
@@ -617,7 +731,7 @@ elif menu == "Bài 11 — Q-learning":
 # ══════════════════════════════════════════════════
 # BÀI 12 — AIDEOM-VN TỔNG HỢP
 # ══════════════════════════════════════════════════
-elif menu == "Bài 12 — AIDEOM-VN tổng hợp":
+elif menu == "🧠 Bài 12 — AIDEOM tích hợp":
     st.markdown('<div class="page-header"><h1>Bài 12 — AIDEOM-VN Nguyên mẫu tổng hợp</h1><p>6 Module · 5 Kịch bản chính sách · Dashboard ra quyết định</p></div>', unsafe_allow_html=True)
 
     # Dữ liệu kịch bản
