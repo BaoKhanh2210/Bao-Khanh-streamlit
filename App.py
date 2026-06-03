@@ -450,7 +450,8 @@ elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
 
     # 1.4.4
     st.markdown('<div class="sec-title">📌 Câu 1.4.4 — Kịch bản GDP 2030</div>', unsafe_allow_html=True)
-    K30=K[-1]*(1.06)**5; L30=L[-1]*(1.005)**5; A30=A[-1]*(1.012)**5; D30,AI30,H30=30.0,100.0,35.0
+    # Dung dung de bai cau 1.4.4: K va L cung tang 6%/nam, TFP tang 1,2%/nam
+    K30=K[-1]*(1.06)**5; L30=L[-1]*(1.06)**5; A30=A[-1]*(1.012)**5; D30,AI30,H30=30.0,100.0,35.0
     Y30=A30*(K30**al*L30**be*D30**ga*AI30**de*H30**th)
     st.success(f"🎯 GDP dự báo 2030: **{Y30:,.0f} nghìn tỷ VND** | Tăng TB: **{((Y30/Y[-1])**(1/5)-1)*100:.2f}%/năm**")
     c1,c2 = st.columns(2); c1.metric("GDP 2025",f"{Y[-1]:,.0f}"); c2.metric("GDP 2030 (dự báo)",f"{Y30:,.0f}")
@@ -588,7 +589,9 @@ elif menu == "📊 Bài 3 — Priority 10 ngành":
     <b>Bộ trọng số mặc định:</b> a1=0,15 · a2=0,15 · a3=0,20 · a4=0,15 · a5=0,10 · a6=0,20 · a7=0,15
     </div>""", unsafe_allow_html=True)
 
-    df=df_sectors.copy(); df["labor_productivity"]=(df["gdp_share_2024_pct"]/100)*11511.9/df["labor_million"]
+    df=df_sectors.copy()
+    # Nang suat LD lay TRUC TIEP tu Bang 3.3 cua de bai (tr.VND/LD), khong tu suy tu gdp_share
+    df["labor_productivity"]=[103.4,241.2,168.8,1290.5,145.3,1072.4,321.4,713.8,205.7,437.1]
     def norm_good(x): return (x-x.min())/(x.max()-x.min())
     def norm_bad(x): return (x.max()-x)/(x.max()-x.min())
     cols_good=["growth_rate_2024_pct","labor_productivity","spillover_coef_0_1","export_billion_USD","labor_million","ai_readiness_0_100"]
@@ -696,7 +699,7 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
       <li>(C2) Sàn mỗi vùng: Σ(j) x(j,r) ≥ 5.000 ∀r</li>
       <li>(C3) Trần mỗi vùng: Σ(j) x(j,r) ≤ 12.000 ∀r</li>
       <li>(C4) Sàn nhân lực số: Σ(r) x(H,r) ≥ 12.000 (24% ngân sách)</li>
-      <li>(C5) Công bằng vùng: D(r) + γ·x(D,r) ≥ λ·max(D(r)+γ·x(D,r)), với γ=0,002, λ=0,6</li>
+      <li>(C5) Công bằng vùng: D(r) + γ·x(D,r) ≥ λ·max(D(r)+γ·x(D,r)), với γ=0,002, λ=0,7 (theo đề bài)</li>
     </ul>
     </div>""", unsafe_allow_html=True)
 
@@ -709,7 +712,30 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
               'NCC':{'I':1.05,'D':0.95,'AI':0.85,'H':1.15},'CH':{'I':1.20,'D':0.75,'AI':0.45,'H':1.35},
               'SE':{'I':0.90,'D':1.30,'AI':1.55,'H':1.00},'MD':{'I':1.10,'D':0.85,'AI':0.65,'H':1.25}}
         D0={'NMM':38,'RRD':78,'NCC':55,'CH':32,'SE':82,'MD':48}
-        gv,lm=0.002,0.6
+        # De bai yeu cau lambda=0,7. Voi tran vung 12.000 + Tay Nguyen D0=32,
+        # mo hinh VO NGHIEM tai lambda>=0,69. Ta giu lambda=0,7 theo de, do kha thi,
+        # neu infeasible thi tu dong lui ve lambda kha thi lon nhat (0,68) va canh bao.
+        gv=0.002; LAM_DEBAI=0.7
+        def _solve_b4(lam_try):
+            mm=pulp.LpProblem('B4f',pulp.LpMaximize)
+            xx=pulp.LpVariable.dicts('xf',(regions,items),lowBound=0)
+            mm+=pulp.lpSum(beta[r][j]*xx[r][j] for r in regions for j in items)
+            mm+=pulp.lpSum(xx[r][j] for r in regions for j in items)<=50000
+            for r in regions:
+                mm+=pulp.lpSum(xx[r][j] for j in items)>=5000
+                mm+=pulp.lpSum(xx[r][j] for j in items)<=12000
+            mm+=pulp.lpSum(xx[r]['H'] for r in regions)>=12000
+            MM=pulp.LpVariable('Dmf',lowBound=0)
+            for r in regions: mm+=D0[r]+gv*xx[r]['D']<=MM
+            for r in regions: mm+=D0[r]+gv*xx[r]['D']>=lam_try*MM
+            mm.solve(pulp.PULP_CBC_CMD(msg=False))
+            return pulp.LpStatus[mm.status]
+        lm=LAM_DEBAI
+        if _solve_b4(LAM_DEBAI)!="Optimal":
+            lm=0.68  # lambda kha thi lon nhat tren so lieu de bai
+            st.warning("⚠️ Voi λ=0,7 theo de bai, mo hinh VO NGHIEM "
+                "(tran vung 12.000 ty + Tay Nguyen D₀=32 khong the dat 0,7·max). "
+                "Da tu dong dung λ=0,68 — gia tri lon nhat con kha thi tren chinh so lieu de bai.")
         st.markdown('<div class="sec-title">📋 4.3 — Bảng hệ số tác động biên β(j,r)</div>', unsafe_allow_html=True)
         st.dataframe(pd.DataFrame(
             {inames[k]:[beta[r][items[k]] for r in regions] for k in range(4)},
@@ -1139,21 +1165,32 @@ elif menu == "🌐 Bài 7 — NSGA-II Pareto":
         ng=st.slider("Số thế hệ NSGA-II",50,200,100,25)
         b7=np.array([[1.15,0.85,0.55,1.30],[0.95,1.25,1.40,1.05],[1.05,0.95,0.85,1.15],[1.20,0.75,0.45,1.35],[0.90,1.30,1.55,1.00],[1.10,0.85,0.65,1.25]])
         e7=np.array([0.42,0.55,0.48,0.32,0.62,0.38]); rho7=np.array([0.18,0.45,0.28,0.12,0.52,0.22]); sig7=np.array([0.32,0.28,0.30,0.35,0.25,0.30])
-        D07=np.array([38,78,55,32,82,48]); g7,l7=0.002,0.6
-        class P7(ElementwiseProblem):
-            def __init__(self): super().__init__(n_var=24,n_obj=4,n_ieq_constr=20,xl=np.zeros(24),xu=np.ones(24)*12000)
-            def _evaluate(self,x,out,*args,**kwargs):
-                X=x.reshape(6,4); f1=-(b7*X).sum(); sums=X.sum(axis=1); f2=np.abs(sums-sums.mean()).mean()
-                f3=(e7*(X[:,0]+X[:,2])).sum(); f4=(rho7*X[:,2]).sum()-(sig7*X[:,3]).sum()
-                out["F"]=[f1,f2,f3,f4]; cons=[X.sum()-50000]
-                for r in range(6): cons.append(5000-X[r].sum())
-                for r in range(6): cons.append(X[r].sum()-12000)
-                cons.append(12000-X[:,3].sum()); Dn=D07+g7*X[:,1]; Dm=Dn.max()
-                for r in range(6): cons.append(l7*Dm-Dn[r])
-                out["G"]=np.array(cons)
+        D07=np.array([38,78,55,32,82,48]); g7=0.002; L7_DEBAI=0.7  # lambda theo de bai (C5 cua Bai 4)
+        def make_P7(lam7):
+            class P7(ElementwiseProblem):
+                def __init__(self): super().__init__(n_var=24,n_obj=4,n_ieq_constr=20,xl=np.zeros(24),xu=np.ones(24)*12000)
+                def _evaluate(self,x,out,*args,**kwargs):
+                    X=x.reshape(6,4); f1=-(b7*X).sum(); sums=X.sum(axis=1); f2=np.abs(sums-sums.mean()).mean()
+                    f3=(e7*(X[:,0]+X[:,2])).sum(); f4=(rho7*X[:,2]).sum()-(sig7*X[:,3]).sum()
+                    out["F"]=[f1,f2,f3,f4]; cons=[X.sum()-50000]
+                    for r in range(6): cons.append(5000-X[r].sum())
+                    for r in range(6): cons.append(X[r].sum()-12000)
+                    cons.append(12000-X[:,3].sum()); Dn=D07+g7*X[:,1]; Dm=Dn.max()
+                    for r in range(6): cons.append(lam7*Dm-Dn[r])
+                    out["G"]=np.array(cons)
+            return P7()
         st.markdown('<div class="sec-title">🔬 7.4 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
         with st.spinner("Chạy NSGA-II (pop=80)..."):
-            res7=moo_min(P7(),NSGA2(pop_size=80),get_termination("n_gen",ng),seed=42,verbose=False)
+            l7=L7_DEBAI
+            res7=moo_min(make_P7(l7),NSGA2(pop_size=80),get_termination("n_gen",ng),seed=42,verbose=False)
+            # Cung rang buoc C5 nhu Bai 4: lambda=0,7 lam tap kha thi rong (vung Tay Nguyen).
+            # Neu NSGA-II khong tim duoc nghiem kha thi nao -> lui ve lambda kha thi lon nhat 0,68.
+            if res7.F is None or len(np.atleast_2d(res7.F))==0:
+                l7=0.68
+                st.warning("⚠️ Voi λ=0,7 theo de bai, rang buoc cong bang C5 khong cho nghiem kha thi nao "
+                    "(giong Bai 4: tran vung 12.000 ty + Tay Nguyen D₀=32). "
+                    "Da tu dong dung λ=0,68 — gia tri lon nhat con kha thi tren so lieu de bai.")
+                res7=moo_min(make_P7(l7),NSGA2(pop_size=100),get_termination("n_gen",max(ng,200)),seed=42,verbose=False)
         F=res7.F; Xsol=res7.X
         if F is not None and len(np.atleast_2d(F))>0:
             F=np.atleast_2d(F); Xsol=np.atleast_2d(Xsol)
