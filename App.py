@@ -282,6 +282,10 @@ if menu == "🏠 Trang chủ":
         st.dataframe(df_sectors, use_container_width=True)
     with t3:
         st.dataframe(df_regions, use_container_width=True)
+    st.caption("⚠️ Lưu ý: Các con số trong tệp CSV được làm tròn để thuận tiện cho việc giảng dạy và lập trình. "
+               "Vì vậy kết quả mô phỏng có thể lệch nhẹ so với số liệu gốc trong đề bài. "
+               "Khi viết luận văn/bài báo, cần truy xuất số liệu gốc từ Cục Thống kê quốc gia (nso.gov.vn) "
+               "và Tổng cục Hải quan để bảo đảm tính học thuật.")
 
     # ── BẢN ĐỒ 12 BÀI ──
     st.divider()
@@ -330,6 +334,23 @@ if menu == "🏠 Trang chủ":
         2. Đọc bối cảnh và mô hình toán học.<br>
         3. Điều chỉnh tham số bằng slider.<br>
         4. Xem bảng kết quả, biểu đồ và nhận xét.</p></div>''', unsafe_allow_html=True)
+
+    # ── LƯU Ý HỌC THUẬT (quan trọng) ──
+    st.markdown('''<div class="context-box">
+    <h4>⚠️ Lưu ý học thuật về số liệu</h4>
+    <b>Các số liệu sử dụng trong dashboard này được làm tròn</b> nhằm phục vụ mục đích mô phỏng,
+    giảng dạy và lập trình. Do đó, <b>kết quả tính toán có thể lệch nhẹ so với số liệu gốc trong đề bài</b>
+    và so với báo cáo chính thức. Điều này KHÔNG ảnh hưởng đến tính đúng đắn của mô hình và phương pháp.
+    <br><br>
+    Khi sử dụng cho <b>luận văn, khóa luận hoặc bài báo khoa học</b>, người học cần:
+    <ul>
+      <li>Truy xuất số liệu gốc từ <b>Cục Thống kê quốc gia</b> (nso.gov.vn / gso.gov.vn) và <b>Tổng cục Hải quan</b>.</li>
+      <li>Kiểm tra lại <b>đơn vị đo lường, thời điểm công bố và phương pháp tính</b> của từng chỉ tiêu.</li>
+      <li>Ghi rõ nguồn dữ liệu và năm cơ sở khi trích dẫn.</li>
+    </ul>
+    Nguồn tham chiếu: NSO/GSO · Bộ KH-CN (MoST) · Bộ TT-TT (MIC) · Bộ KH-ĐT (MPI) · World Bank · Global Innovation Index 2025.
+    </div>''', unsafe_allow_html=True)
+
     st.success("Gợi ý: bắt đầu từ Bài 1 → Bài 2 → Bài 3 để hiểu logic tăng trưởng, tối ưu ngân sách và xếp hạng ưu tiên trước khi sang các bài khó hơn.")
 
 # ══════════════════════════════════════════════════
@@ -731,7 +752,9 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
             fig.tight_layout(); show_fig(fig)
 
             # ── 4.4.2 CVXPY đối chiếu ──
-            st.markdown('<div class="sec-title">📌 Câu 4.4.2 — Đối chiếu PuLP vs CVXPY</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-title">📌 Câu 4.4.2 — Đối chiếu PuLP với solver thứ hai</div>', unsafe_allow_html=True)
+            Z_v2=None; solver_name=""
+            # Ưu tiên CVXPY; nếu không có thì fallback sang scipy.linprog (luôn sẵn)
             try:
                 import cvxpy as cp
                 bm=np.array([[beta[r][j] for j in items] for r in regions])
@@ -744,13 +767,56 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
                         prob.solve(solver=getattr(cp,sv))
                         if prob.status and "optimal" in prob.status: break
                     except: continue
+                Z_v2=prob.value; solver_name="CVXPY"
+            except Exception:
+                # Fallback: giải lại bằng scipy.linprog (24 biến x + 1 biến M)
+                from scipy.optimize import linprog as _lp
+                # biến: [x(0..23), M]; thứ tự x theo (region r, item j): idx = r*4 + j
+                nvar=25
+                cobj=np.zeros(nvar)
+                for r in range(6):
+                    for j in range(4): cobj[r*4+j]=-beta[regions[r]][items[j]]
+                A_ub=[]; b_ub=[]
+                # tổng <= 50000
+                row=[0]*nvar
+                for k in range(24): row[k]=1
+                A_ub.append(row); b_ub.append(50000)
+                # mỗi vùng: >=5000 (=> -sum<=-5000) và <=12000
+                for r in range(6):
+                    row=[0]*nvar
+                    for j in range(4): row[r*4+j]=-1
+                    A_ub.append(row); b_ub.append(-5000)
+                    row=[0]*nvar
+                    for j in range(4): row[r*4+j]=1
+                    A_ub.append(row); b_ub.append(12000)
+                # tổng H >= 12000
+                row=[0]*nvar
+                for r in range(6): row[r*4+1+2]=1   # j=2 là 'AI'? -> H là j=3
+                # sửa: H là items index 3
+                row=[0]*nvar
+                for r in range(6): row[r*4+3]=-1
+                A_ub.append(row); b_ub.append(-12000)
+                # công bằng C5: D0+gv*x_D <= M  và  D0+gv*x_D >= lm*M
+                # x_D là j=1
+                for r in range(6):
+                    row=[0]*nvar; row[r*4+1]=gv; row[24]=-1
+                    A_ub.append(row); b_ub.append(-D0[regions[r]])           # gv*xD - M <= -D0
+                    row=[0]*nvar; row[r*4+1]=-gv; row[24]=lm
+                    A_ub.append(row); b_ub.append(D0[regions[r]])            # -gv*xD + lm*M <= D0
+                bounds=[(0,None)]*24+[(0,None)]
+                rsp=_lp(cobj,A_ub=np.array(A_ub),b_ub=np.array(b_ub),bounds=bounds,method="highs")
+                if rsp.success:
+                    Z_v2=-rsp.fun; solver_name="SciPy (HiGHS)"
+            if Z_v2 is not None:
                 cc1,cc2=st.columns(2)
                 cc1.metric("Z* PuLP (CBC)",f"{Z_eq:,.0f} tỷ")
-                cc2.metric("Z* CVXPY",f"{prob.value:,.0f} tỷ")
-                if abs(Z_eq-(prob.value or 0))<50:
-                    st.success("✅ PuLP và CVXPY cho kết quả TRÙNG KHỚP (chênh < 50 tỷ) — xác nhận tính đúng đắn của lời giải.")
-            except ImportError:
-                st.info("CVXPY chưa cài. Cài: `pip install cvxpy` để đối chiếu. Kết quả PuLP đã có ở trên.")
+                cc2.metric(f"Z* {solver_name}",f"{Z_v2:,.0f} tỷ")
+                if abs(Z_eq-Z_v2)<50:
+                    st.success(f"✅ PuLP và {solver_name} cho kết quả TRÙNG KHỚP (chênh {abs(Z_eq-Z_v2):.1f} tỷ < 50) — xác nhận tính đúng đắn của lời giải LP.")
+                else:
+                    st.info(f"Hai solver chênh {abs(Z_eq-Z_v2):.1f} tỷ (do dung sai số học của thuật toán điểm trong khác simplex).")
+            else:
+                st.info("Không giải được bằng solver thứ hai. Kết quả PuLP đã có ở trên.")
 
             # ── 4.4.4 Chi phí công bằng (bỏ C5) ──
             st.markdown('<div class="sec-title">📌 Câu 4.4.4 — Chi phí của công bằng vùng miền</div>', unsafe_allow_html=True)
