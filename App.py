@@ -1,6 +1,6 @@
 """
 AIDEOM-VN Dashboard — Các mô hình ra quyết định
-Sinh viên: Nguyễn Bảo Khánh | MSSV: 23051266
+Sinh viên: Nguyễn Minh Khuê | MSSV: 23051273
 """
 
 import streamlit as st
