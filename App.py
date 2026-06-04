@@ -151,9 +151,9 @@ with st.sidebar:
     st.markdown("""
     <div class="student-card">
         <div class="lbl">Họ và tên</div>
-        Nguyễn Bảo Khánh<br>
+        Nguyễn Minh Khuê<br>
         <div class="lbl">Mã sinh viên</div>
-        23051266<br>
+        23051273<br>
         <div class="lbl">Bài tập lớn</div>
         Các mô hình ra quyết định
     </div>
