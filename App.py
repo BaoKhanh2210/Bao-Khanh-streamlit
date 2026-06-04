@@ -456,6 +456,32 @@ elif menu == "🌱 Bài 1 — Cobb-Douglas + AI":
     st.success(f"🎯 GDP dự báo 2030: **{Y30:,.0f} nghìn tỷ VND** | Tăng TB: **{((Y30/Y[-1])**(1/5)-1)*100:.2f}%/năm**")
     c1,c2 = st.columns(2); c1.metric("GDP 2025",f"{Y[-1]:,.0f}"); c2.metric("GDP 2030 (dự báo)",f"{Y30:,.0f}")
 
+    # 1.5 — Thảo luận chính sách
+    tfp_rate=((A[-1]/A[0])**(1/5)-1)*100
+    cD=ga*(np.log(D[-1])-np.log(D[0]))/n/g_Y*100
+    cAI=de*(np.log(AI[-1])-np.log(AI[0]))/n/g_Y*100
+    cH=th*(np.log(H[-1])-np.log(H[0]))/n/g_Y*100
+    new_factors={"Số hóa (D)":cD,"Năng lực AI":cAI,"Nhân lực số (H)":cH}
+    top_new=max(new_factors,key=new_factors.get)
+    st.markdown('<div class="sec-title">💬 1.5 — Câu hỏi thảo luận chính sách</div>', unsafe_allow_html=True)
+    st.markdown(f"""<div class="info-box">
+    <b>a) TFP tăng hay giảm? Nói lên gì về chất lượng tăng trưởng?</b><br>
+    TFP có xu hướng <b>tăng</b> ({tfp_rate:.2f}%/năm) và đóng góp <b>{contrib['TFP(A)']:.1f}%</b> vào tăng trưởng GDP 2020–2025 —
+    lớn hơn cả đóng góp của vốn vật chất K ({contrib['K']:.1f}%). Điều này cho thấy tăng trưởng đang
+    <b>chuyển dần từ thâm dụng vốn sang dựa vào năng suất và công nghệ</b>, một dấu hiệu tích cực về chất lượng tăng trưởng.
+    Tuy nhiên TFP ước lượng theo cách giải ngược (Solow residual) còn hấp thụ cả sai số đo lường, nên cần thận trọng khi diễn giải.<br><br>
+    <b>b) Trong D, AI, H — yếu tố nào đóng góp nhiều nhất? Vì sao?</b><br>
+    Yếu tố <b>{top_new}</b> đóng góp nhiều nhất trong ba yếu tố mới
+    (D={cD:.1f}% · AI={cAI:.1f}% · H={cH:.1f}%). Số hóa dẫn đầu vì tỷ trọng kinh tế số/GDP tăng rất nhanh
+    (12% → 19,5% chỉ trong 5 năm), tốc độ tăng vượt xa AI và nhân lực qua đào tạo. Dù hệ số co giãn γ=0,10 không lớn,
+    nhịp tăng nhanh khiến đóng góp tích lũy của D nổi trội.<br><br>
+    <b>c) Mục tiêu 30% kinh tế số/GDP vào 2030 có khả thi không? Cần ràng buộc gì?</b><br>
+    Theo kịch bản mô phỏng, để đạt D=30% cần duy trì tốc độ số hóa cao liên tục. Mức này <b>tham vọng nhưng khả thi</b>
+    nếu giữ được đà 2020–2025, song mô hình giả định lợi suất không đổi theo quy mô và các yếu tố tăng độc lập —
+    thực tế D, AI, H bổ trợ lẫn nhau. Cần ràng buộc đi kèm: đầu tư <b>nhân lực số (H)</b> phải tăng tương ứng để hấp thụ
+    công nghệ, tránh "nghịch lý năng suất" khi đầu tư số nhưng thiếu người vận hành.
+    </div>""", unsafe_allow_html=True)
+
 # ══════════════════════════════════════════════════
 # BÀI 2 — PHÂN BỔ NGÂN SÁCH
 # ══════════════════════════════════════════════════
@@ -762,21 +788,6 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
             st.success(f"**Z* = {Z_eq:,.0f} tỷ VND GDP gain** (có ràng buộc công bằng C5)")
             dfm=pd.DataFrame(alloc.round(0),index=rnames,columns=inames); dfm["Tổng"]=dfm.sum(axis=1)
             st.dataframe(dfm, use_container_width=True)
-            # ── 4.4.3 Heatmap ──
-            st.markdown('<div class="sec-title">📌 Câu 4.4.3 — Heatmap phân bổ & ngân sách mỗi vùng</div>', unsafe_allow_html=True)
-            fig,(ax1,ax2)=plt.subplots(1,2,figsize=(13,5))
-            im=ax1.imshow(alloc,cmap="Blues",aspect="auto")
-            ax1.set_yticks(range(6)); ax1.set_yticklabels(rnames)
-            ax1.set_xticks(range(4)); ax1.set_xticklabels(inames)
-            ax1.set_title("Heatmap phân bổ tối ưu",fontweight="bold"); plt.colorbar(im,ax=ax1)
-            for i in range(6):
-                for j in range(4): ax1.text(j,i,f"{alloc[i,j]:.0f}",ha="center",va="center",fontsize=8,color="white" if alloc[i,j]>alloc.max()*0.6 else "black")
-            ax2.bar(rnames,alloc.sum(axis=1),color="#42a5f5",edgecolor="white")
-            ax2.axhline(5000,color="red",ls="--",label="Sàn"); ax2.axhline(12000,color="orange",ls="--",label="Trần")
-            ax2.set_title("Tổng ngân sách mỗi vùng",fontweight="bold"); ax2.set_xticklabels(rnames,rotation=20,ha="right"); ax2.legend()
-            for ax in [ax1,ax2]: ax.grid(alpha=0.3,axis="y" if ax==ax2 else "x"); ax.spines[["top","right"]].set_visible(False)
-            fig.tight_layout(); show_fig(fig)
-
             # ── 4.4.2 CVXPY đối chiếu ──
             st.markdown('<div class="sec-title">📌 Câu 4.4.2 — Đối chiếu PuLP với solver thứ hai</div>', unsafe_allow_html=True)
             Z_v2=None; solver_name=""
@@ -843,6 +854,21 @@ elif menu == "🗺️ Bài 4 — LP ngành-vùng":
                     st.info(f"Hai solver chênh {abs(Z_eq-Z_v2):.1f} tỷ (do dung sai số học của thuật toán điểm trong khác simplex).")
             else:
                 st.info("Không giải được bằng solver thứ hai. Kết quả PuLP đã có ở trên.")
+
+            # ── 4.4.3 Heatmap ──
+            st.markdown('<div class="sec-title">📌 Câu 4.4.3 — Heatmap phân bổ & ngân sách mỗi vùng</div>', unsafe_allow_html=True)
+            fig,(ax1,ax2)=plt.subplots(1,2,figsize=(13,5))
+            im=ax1.imshow(alloc,cmap="Blues",aspect="auto")
+            ax1.set_yticks(range(6)); ax1.set_yticklabels(rnames)
+            ax1.set_xticks(range(4)); ax1.set_xticklabels(inames)
+            ax1.set_title("Heatmap phân bổ tối ưu",fontweight="bold"); plt.colorbar(im,ax=ax1)
+            for i in range(6):
+                for j in range(4): ax1.text(j,i,f"{alloc[i,j]:.0f}",ha="center",va="center",fontsize=8,color="white" if alloc[i,j]>alloc.max()*0.6 else "black")
+            ax2.bar(rnames,alloc.sum(axis=1),color="#42a5f5",edgecolor="white")
+            ax2.axhline(5000,color="red",ls="--",label="Sàn"); ax2.axhline(12000,color="orange",ls="--",label="Trần")
+            ax2.set_title("Tổng ngân sách mỗi vùng",fontweight="bold"); ax2.set_xticklabels(rnames,rotation=20,ha="right"); ax2.legend()
+            for ax in [ax1,ax2]: ax.grid(alpha=0.3,axis="y" if ax==ax2 else "x"); ax.spines[["top","right"]].set_visible(False)
+            fig.tight_layout(); show_fig(fig)
 
             # ── 4.4.4 Chi phí công bằng (bỏ C5) ──
             st.markdown('<div class="sec-title">📌 Câu 4.4.4 — Chi phí của công bằng vùng miền</div>', unsafe_allow_html=True)
@@ -1381,8 +1407,8 @@ elif menu == "👷 Bài 9 — Lao động & AI":
     </ul>
     <h4>Bài toán tối ưu</h4>
     <div class="formula">max Σ NetJob(i)</div>
-    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i
-    <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại")
+    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i; <b>x_AI(i) ≥ 500 tỷ ∀i</b>
+    <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại"; sàn AI tránh nghiệm góc x_AI=0 — bảo đảm mọi ngành đều triển khai AI ở mức cơ bản)
     </div>""", unsafe_allow_html=True)
 
     from scipy.optimize import linprog
@@ -1402,7 +1428,11 @@ elif menu == "👷 Bài 9 — Lao động & AI":
     for i in range(N): A2[i,i]=-coeff[i]; A2[i,N+i]=-b1[i]
     A3=np.zeros((N,2*N))
     for i in range(N): A3[i,i]=c1[i]*risk[i]; A3[i,N+i]=-d1[i]
-    res9=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3]),b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N)]),bounds=[(0,None)]*(2*N),method="highs")
+    # San dau tu AI toi thieu moi nganh (de tranh nghiem goc x_AI=0 — vo nghia chinh sach):
+    # buoc moi nganh duoc trien khai AI o muc co ban, dam bao chuyen doi cong nghe dien ra dien rong.
+    MIN_AI=500.0  # ty VND / nganh
+    bounds9=[(MIN_AI,None)]*N + [(0,None)]*N
+    res9=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3]),b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N)]),bounds=bounds9,method="highs")
     if res9.success:
         xA=res9.x[:N]; xH=res9.x[N:]; NJ=coeff*xA+b1*xH
         Displaced=c1*risk*xA; RetrainCap=d1*xH
@@ -1448,7 +1478,7 @@ elif menu == "👷 Bài 9 — Lao động & AI":
         A4=np.zeros((N,2*N))
         for i in range(N): A4[i,i]=c1[i]*risk[i]
         res9b=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3,A4]),
-                      b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N),0.05*Lsec*1e6]),bounds=[(0,None)]*(2*N),method="highs")
+                      b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N),0.05*Lsec*1e6]),bounds=bounds9,method="highs")
         if res9b.success:
             NJ2=coeff*res9b.x[:N]+b1*res9b.x[N:]
             st.success(f"✅ Khả thi với ràng buộc 5%L · Tổng NetJob = {NJ2.sum():,.0f} (giảm {NJ.sum()-NJ2.sum():,.0f} = {(NJ.sum()-NJ2.sum())/NJ.sum()*100:.1f}%)")
@@ -1483,7 +1513,7 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown("""<div class="model-box">
     <h4>Cấu trúc 2 giai đoạn</h4>
     <b>Giai đoạn 1 (here-and-now):</b> quyết định x = (x_I, x_D, x_AI, x_H) trước khi biết kịch bản
-    <div class="formula">Σ x(j) ≤ 65.000 (giữ 15.000 dự phòng)</div>
+    <div class="formula">Σ x(j) ≤ 65.000 (giữ 15.000 dự phòng) ; x(j) ≥ 10.000 ∀j</div>
     <b>Giai đoạn 2 (recourse):</b> điều chỉnh y(s) sau khi kịch bản s hiện thực hóa
     <div class="formula">Σ y(s,j) ≤ 15.000 ∀s ; y(AI,s) ≤ 0,5·x_H ∀s</div>
     <h4>Hàm mục tiêu</h4>
@@ -1516,6 +1546,9 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown('<div class="sec-title">🔬 10.5 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
 
     # Giải SP bằng scipy (đảm bảo chạy được không cần solver ngoài)
+    # San toi thieu moi hang muc first-stage de tranh nghiem goc "tat ca vao AI"
+    # (x_H=0 se vo hieu hoa ca rang buoc recourse y_AI<=0,5*x_H). San bao dam phan bo can doi.
+    MINJ=10000.0
     n=4+16; cobj=np.zeros(n)
     for k,j in enumerate(J): cobj[k]=-bb[j]
     for si,s in enumerate(S):
@@ -1529,13 +1562,14 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     for si in range(4):
         row=[0]*n; row[3]=-0.5; row[4+si*4+2]=1
         Aub.append(row); bub.append(0)
-    res10=linprog(cobj,A_ub=np.array(Aub),b_ub=np.array(bub),bounds=[(0,None)]*n,method="highs")
+    bounds_sp=[(MINJ,None)]*4+[(0,None)]*16
+    res10=linprog(cobj,A_ub=np.array(Aub),b_ub=np.array(bub),bounds=bounds_sp,method="highs")
     x_sp=res10.x[:4]; Z_sp=-res10.fun
 
     # EV deterministic
     beta_avg={j:sum(ps[s]*bs[(s,j)] for s in S) for j in J}
     cev=[-beta_avg[j] for j in J]
-    rev=linprog(cev,A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(0,None)]*4,method="highs")
+    rev=linprog(cev,A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(MINJ,None)]*4,method="highs")
     x_ev=rev.x; Z_ev=sum(bb[j]*x_ev[k] for k,j in enumerate(J))
     for s in S:
         cs=[-bs[(s,j)] for j in J]
@@ -1572,16 +1606,24 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     c1,c2,c3,c4=st.columns(4)
     c1.metric("Z* Stochastic (SP)",f"{Z_sp:,.0f}"); c2.metric("Z* EV",f"{Z_ev:,.0f}")
     c3.metric("VSS",f"{VSS:,.0f} tỷ"); c4.metric("EVPI",f"{EVPI:,.0f} tỷ")
-    st.markdown(f"""<div class="note-box">💡 <b>VSS = {VSS:,.0f} tỷ</b>: lợi ích của việc dùng mô hình ngẫu nhiên thay vì EV.
-    <b>EVPI = {EVPI:,.0f} tỷ</b>: giá trị tối đa sẵn sàng trả để có thông tin hoàn hảo về kịch bản.
-    SP đầu tư H (nhân lực) nhiều hơn EV - H là "hàng hóa bảo hiểm" giúp hấp thụ cú sốc.</div>""", unsafe_allow_html=True)
+    dH=x_sp[3]-x_ev[3]
+    if abs(VSS)<1:
+        vss_msg=("<b>VSS ≈ 0</b>: với cấu trúc hệ số tuyến tính này, lời giải SP và EV trùng nhau ở first-stage "
+                 "(cùng ưu tiên AI do β_AI cao nhất ở mọi kịch bản), nên việc mô hình hóa bất định "
+                 "<b>không đổi quyết định ban đầu</b> — đây cũng là một kết luận có ý nghĩa: giá trị của tư duy ngẫu nhiên "
+                 "nằm chủ yếu ở quyết định recourse giai đoạn 2.")
+    else:
+        vss_msg=(f"<b>VSS = {VSS:,.0f} tỷ</b>: lợi ích của việc dùng mô hình ngẫu nhiên thay vì EV. "
+                 f"SP đầu tư H {'nhiều hơn' if dH>0 else 'không nhiều hơn'} EV ({x_sp[3]:,.0f} vs {x_ev[3]:,.0f} tỷ).")
+    st.markdown(f"""<div class="note-box">💡 {vss_msg}<br>
+    <b>EVPI = {EVPI:,.0f} tỷ</b>: giá trị tối đa sẵn sàng trả để có thông tin hoàn hảo về kịch bản tương lai.</div>""", unsafe_allow_html=True)
 
     # ── 10.6 Thảo luận ──
     st.markdown('<div class="sec-title">💬 10.6 — Câu hỏi thảo luận chính sách</div>', unsafe_allow_html=True)
-    st.markdown("""<div class="info-box">
-    <b>a)</b> So với lời giải xác định, SP đầu tư H nhiều hơn vì nhân lực giúp linh hoạt thích ứng mọi kịch bản.<br>
-    <b>b)</b> VSS dương khẳng định giá trị của tư duy xác suất trong hoạch định chính sách Việt Nam.<br>
-    <b>c)</b> COVID-19 và bão Yagi là cú sốc thực tế - Việt Nam nên xem nhân lực số như "hàng hóa bảo hiểm", tránh "dưới đầu tư".
+    st.markdown(f"""<div class="info-box">
+    <b>a)</b> Quyết định first-stage tối ưu ưu tiên AI (β_AI cao nhất ở mọi kịch bản); các hạng mục I, D, H giữ ở mức sàn để bảo đảm phân bổ cân đối và đủ năng lực nhân lực (x_H={x_sp[3]:,.0f} tỷ) cho recourse AI giai đoạn 2.<br>
+    <b>b)</b> Giá trị của tư duy ngẫu nhiên thể hiện rõ nhất ở <b>giai đoạn recourse</b>: kịch bản lạc quan/cơ sở dồn điều chỉnh vào D, còn kịch bản bi quan/khủng hoảng chuyển hướng sang H (nhân lực hấp thụ cú sốc tốt hơn, β_H tăng lên 1,10).<br>
+    <b>c)</b> COVID-19 và bão Yagi là cú sốc thực tế — khoản dự phòng 15.000 tỷ và năng lực nhân lực số đóng vai trò "đệm" giúp chính sách điều chỉnh linh hoạt thay vì cứng nhắc.
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════
@@ -1797,10 +1839,12 @@ elif menu == "🧠 Bài 12 — AIDEOM tích hợp":
         with cb:
             from scipy.optimize import linprog as lp9
             N9=8; scs9=['Nông-LT','CN cbct','Xây dựng','BBL','TC-NH','Logistics','CNTT','GD-ĐT']
-            r9=np.array([18,42,25,38,52,35,28,22])/100; a19=np.array([8.5,32.5,12.8,22.4,45.8,28.5,62.5,18.5]); b19=np.array([45,28,35,32,22,30,20,55]); c19=np.array([5.2,62.4,18.5,48.2,72.5,42.8,32.5,12.5])
-            cf9=a19-c19*r9; co9=np.concatenate([-cf9,-b19]); A1n=np.ones((1,2*N9)); A2n=np.zeros((N9,2*N9))
+            r9=np.array([18,42,25,38,52,35,28,22])/100; a19=np.array([8.5,32.5,12.8,22.4,45.8,28.5,62.5,18.5]); b19=np.array([45,28,35,32,22,30,20,55]); c19=np.array([5.2,62.4,18.5,48.2,72.5,42.8,32.5,12.5]); d19=np.array([50,32,42,38,26,36,24,62])
+            cf9=a19-c19*r9; co9=np.concatenate([-cf9,-b19]); A1n=np.ones((1,2*N9)); A2n=np.zeros((N9,2*N9)); A3n=np.zeros((N9,2*N9))
             for i in range(N9): A2n[i,i]=-cf9[i]; A2n[i,N9+i]=-b19[i]
-            rr9=lp9(co9,A_ub=np.vstack([A1n,A2n]),b_ub=np.concatenate([[30000],np.zeros(N9)]),bounds=[(0,None)]*(2*N9),method="highs")
+            for i in range(N9): A3n[i,i]=c19[i]*r9[i]; A3n[i,N9+i]=-d19[i]
+            bnd9=[(500.0,None)]*N9+[(0,None)]*N9  # san AI nhu Bai 9
+            rr9=lp9(co9,A_ub=np.vstack([A1n,A2n,A3n]),b_ub=np.concatenate([[30000],np.zeros(N9),np.zeros(N9)]),bounds=bnd9,method="highs")
             NJ9=cf9*rr9.x[:N9]+b19*rr9.x[N9:] if rr9.success else np.zeros(N9)
             fig3,ax3=plt.subplots(figsize=(6,4))
             ax3.bar(scs9,NJ9,color=["#66bb6a" if v>=0 else "#ef5350" for v in NJ9],edgecolor="white")
