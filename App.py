@@ -1400,14 +1400,14 @@ elif menu == "👷 Bài 9 — Lao động & AI":
     <h4>Việc làm ròng theo ngành i</h4>
     <div class="formula">NetJob(i) = NewJob(i) + UpgradeJob(i) − DisplacedJob(i)</div>
     <ul>
-      <li>NewJob = a1·x_AI + a2·x_D (việc làm mới từ AI & số hóa)</li>
+      <li>NewJob = a1·x_AI (việc làm mới từ AI)</li>
       <li>UpgradeJob = b1·x_H (nâng cấp nhờ đào tạo)</li>
       <li>DisplacedJob = c1·risk·x_AI (việc bị thay thế)</li>
       <li>RetrainCapacity = d1·x_H (năng lực đào tạo lại)</li>
     </ul>
     <h4>Bài toán tối ưu</h4>
     <div class="formula">max Σ NetJob(i)</div>
-    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i
+    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i; <b>Σ x_AI ≥ 9.000</b> (sàn 30% ngân sách, tránh nghiệm tầm thường x_AI=0)
     <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại")
     </div>""", unsafe_allow_html=True)
 
@@ -1424,12 +1424,20 @@ elif menu == "👷 Bài 9 — Lao động & AI":
 
     st.markdown('<div class="sec-title">🔬 9.4 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
     coeff=a1-c1*risk; c_obj=np.concatenate([-coeff,-b1])
-    A1l=np.ones((1,2*N)); A2=np.zeros((N,2*N))
+    # R1: tong ngan sach <= 30000
+    A1l=np.concatenate([np.ones(N),np.ones(N)]).reshape(1,-1)
+    # R1b: san tong x_AI >= 9000 (theo notebook) -> -sum(x_AI) <= -9000
+    A1b=np.concatenate([-np.ones(N),np.zeros(N)]).reshape(1,-1)
+    # R2: NetJob_i >= 0
+    A2=np.zeros((N,2*N))
     for i in range(N): A2[i,i]=-coeff[i]; A2[i,N+i]=-b1[i]
+    # R3: Displaced <= RetrainCap
     A3=np.zeros((N,2*N))
     for i in range(N): A3[i,i]=c1[i]*risk[i]; A3[i,N+i]=-d1[i]
+    A_ub9=np.vstack([A1l,A1b,A2,A3])
+    b_ub9=np.concatenate([[30000],[-9000],np.zeros(N),np.zeros(N)])
     bounds9=[(0,None)]*(2*N)
-    res9=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3]),b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N)]),bounds=bounds9,method="highs")
+    res9=linprog(c_obj,A_ub=A_ub9,b_ub=b_ub9,bounds=bounds9,method="highs")
     if res9.success:
         xA=res9.x[:N]; xH=res9.x[N:]; NJ=coeff*xA+b1*xH
         Displaced=c1*risk*xA; RetrainCap=d1*xH
@@ -1448,13 +1456,30 @@ elif menu == "👷 Bài 9 — Lao động & AI":
         ax2.bar(x9+w9,c1*risk*xA,w9,label="Bị thay thế",color="#ef5350")
         ax2.set_xticks(x9); ax2.set_xticklabels(secs,rotation=30,ha="right"); ax2.legend(); ax2.set_title("Phân rã tác động lao động",fontweight="bold"); ax2.grid(axis="y",alpha=0.3); ax2.spines[["top","right"]].set_visible(False)
         fig.tight_layout(); show_fig(fig)
+        st.markdown(f"""<div class="note-box">💡 <b>Nhận xét:</b> Với sàn Σx_AI ≥ 9.000 tỷ, ngân sách AI dồn vào ngành
+        có hệ số việc làm ròng cao nhất (CNTT-TT, net AI = {coeff[6]:.1f}); phần còn lại đầu tư đào tạo (H) ở các ngành
+        có hệ số nâng cấp cao. Tổng NetJob = {NJ.sum():,.0f} việc làm.</div>""", unsafe_allow_html=True)
 
         # ── 9.4.2 Ngưỡng đào tạo ──
         st.markdown('<div class="sec-title">📌 Câu 9.4.2 — Ngưỡng đào tạo tối thiểu ngành CN chế biến</div>', unsafe_allow_html=True)
         i_cn=1; rr=c1[i_cn]*risk[i_cn]/d1[i_cn]; net_ai=a1[i_cn]-c1[i_cn]*risk[i_cn]
+        nj_thr=(-net_ai/b1[i_cn]) if net_ai<0 else 0.0
         st.markdown(f"""<div class="note-box">Ngành <b>CN chế biến chế tạo</b> (risk=42%): để Displaced ≤ RetrainCapacity,
-        cần <b>x_H ≥ {rr:.3f}·x_AI</b>. Hệ số net AI = {net_ai:.1f} (âm → mỗi đồng AI làm mất việc ròng nếu không đào tạo kèm).
-        Đây là ngành cần đầu tư đào tạo lại nhiều nhất.</div>""", unsafe_allow_html=True)
+        cần <b>x_H ≥ {rr:.3f}·x_AI</b>. Hệ số net AI = {net_ai:.1f}
+        ({'dương → AI tạo việc làm ròng' if net_ai>=0 else 'âm → mỗi đồng AI làm mất việc ròng nếu không đào tạo kèm'}).
+        Ràng buộc đào tạo lại (retrain) chặt hơn ràng buộc NetJob, nên đây là ngành cần đầu tư đào tạo lại nhiều nhất.</div>""", unsafe_allow_html=True)
+        x_AI_range=np.linspace(0,30000,100)
+        x_H_retrain=rr*x_AI_range
+        x_H_netjob=np.maximum(0,nj_thr*x_AI_range)
+        x_H_minline=np.maximum(x_H_retrain,x_H_netjob)
+        fig,ax=plt.subplots(figsize=(9,4))
+        ax.plot(x_AI_range,x_H_retrain,"r--",lw=2,label=f"Retrain: x_H≥{rr:.3f}·x_AI")
+        ax.plot(x_AI_range,x_H_netjob,"b--",lw=2,label=f"NetJob≥0: x_H≥{nj_thr:.3f}·x_AI")
+        ax.fill_between(x_AI_range,x_H_minline,30000,alpha=0.15,color="green",label="Vùng khả thi")
+        ax.set_xlabel("x_AI (tỷ VND)"); ax.set_ylabel("x_H tối thiểu (tỷ VND)")
+        ax.set_title("Ngưỡng đào tạo tối thiểu — CN chế biến",fontweight="bold"); ax.legend(); ax.grid(True,alpha=0.3)
+        ax.set_xlim(0,30000); ax.set_ylim(0,30000); ax.spines[["top","right"]].set_visible(False)
+        fig.tight_layout(); show_fig(fig)
 
         # ── 9.4.3 Sankey luồng lao động ──
         st.markdown('<div class="sec-title">📌 Câu 9.4.3 — Luồng dịch chuyển lao động nhóm dễ tổn thương</div>', unsafe_allow_html=True)
@@ -1474,8 +1499,8 @@ elif menu == "👷 Bài 9 — Lao động & AI":
         st.markdown('<div class="sec-title">📌 Câu 9.4.4 — Ràng buộc Displaced ≤ 5% lao động</div>', unsafe_allow_html=True)
         A4=np.zeros((N,2*N))
         for i in range(N): A4[i,i]=c1[i]*risk[i]
-        res9b=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3,A4]),
-                      b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N),0.05*Lsec*1e6]),bounds=bounds9,method="highs")
+        res9b=linprog(c_obj,A_ub=np.vstack([A_ub9,A4]),
+                      b_ub=np.concatenate([b_ub9,0.05*Lsec*1e6]),bounds=bounds9,method="highs")
         if res9b.success:
             NJ2=coeff*res9b.x[:N]+b1*res9b.x[N:]
             st.success(f"✅ Khả thi với ràng buộc 5%L · Tổng NetJob = {NJ2.sum():,.0f} (giảm {NJ.sum()-NJ2.sum():,.0f} = {(NJ.sum()-NJ2.sum())/NJ.sum()*100:.1f}%)")
@@ -1491,11 +1516,13 @@ elif menu == "👷 Bài 9 — Lao động & AI":
         <b>d)</b> Ràng buộc "Displaced ≤ RetrainCapacity" biểu diễn "tốc độ tự động hóa không vượt năng lực đào tạo lại".
         </div>""", unsafe_allow_html=True)
 
+
+
 # ══════════════════════════════════════════════════
 # BÀI 10 — QUY HOẠCH NGẪU NHIÊN
 # ══════════════════════════════════════════════════
 elif menu == "🎲 Bài 10 — Stochastic SP":
-    st.markdown('<div class="page-header"><h1>Bài 10 — Quy hoạch ngẫu nhiên 2 giai đoạn</h1><p>First-stage · Recourse · VSS · EVPI · Pyomo</p></div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-header"><h1>Bài 10 — Quy hoạch ngẫu nhiên 2 giai đoạn</h1><p>First-stage · Recourse · VSS · EVPI · Robust regret</p></div>', unsafe_allow_html=True)
 
     st.markdown('<div class="sec-title">🇻🇳 10.1 — Bối cảnh Việt Nam</div>', unsafe_allow_html=True)
     st.markdown("""<div class="context-box">
@@ -1532,7 +1559,7 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
         ('s3','I'):0.75,('s3','D'):0.85,('s3','AI'):0.90,('s3','H'):1.00,
         ('s4','I'):0.40,('s4','D'):0.50,('s4','AI'):0.55,('s4','H'):1.10}
 
-    # ── 10.3 Bảng kịch bản ──
+    # ── 10.4 Bảng kịch bản ──
     st.markdown('<div class="sec-title">📋 10.4 — Bảng hệ số β theo kịch bản & xác suất</div>', unsafe_allow_html=True)
     st.dataframe(pd.DataFrame({"Hạng mục":["I (hạ tầng)","D (CĐS)","AI","H (nhân lực)"],
                  "β cơ bản":[bb[j] for j in J],
@@ -1542,34 +1569,35 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
 
     st.markdown('<div class="sec-title">🔬 10.5 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
 
-    # Giải SP bằng scipy (đảm bảo chạy được không cần solver ngoài)
+    # ===== SP (stochastic) — bien: [x(4), y_s1(4), y_s2(4), y_s3(4), y_s4(4)] = 20 bien =====
+    # Logic & rang buoc giu nguyen theo notebook (KHONG san first-stage).
     n=4+16; cobj=np.zeros(n)
     for k,j in enumerate(J): cobj[k]=-bb[j]
     for si,s in enumerate(S):
         for k,j in enumerate(J): cobj[4+si*4+k]=-ps[s]*bs[(s,j)]
     Aub=[]; bub=[]
-    Aub.append([1,1,1,1]+[0]*16); bub.append(65000)
-    for si in range(4):
+    Aub.append([1,1,1,1]+[0]*16); bub.append(65000)            # budget1
+    for si in range(4):                                         # budget2 moi kich ban
         row=[0]*n
         for k in range(4): row[4+si*4+k]=1
         Aub.append(row); bub.append(15000)
-    for si in range(4):
+    for si in range(4):                                         # y_AI <= 0,5*x_H
         row=[0]*n; row[3]=-0.5; row[4+si*4+2]=1
         Aub.append(row); bub.append(0)
-    bounds_sp=[(0,None)]*n
-    res10=linprog(cobj,A_ub=np.array(Aub),b_ub=np.array(bub),bounds=bounds_sp,method="highs")
-    x_sp=res10.x[:4]; Z_sp=-res10.fun
+    res10=linprog(cobj,A_ub=np.array(Aub),b_ub=np.array(bub),bounds=[(0,None)]*n,method="highs")
+    x_sp=res10.x[:4]; y_sp={s:res10.x[4+si*4:4+si*4+4] for si,s in enumerate(S)}; Z_sp=-res10.fun
 
-    # EV deterministic
+    # ===== EV (deterministic, beta trung binh) — first-stage =====
     beta_avg={j:sum(ps[s]*bs[(s,j)] for s in S) for j in J}
-    cev=[-beta_avg[j] for j in J]
-    rev=linprog(cev,A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(0,None)]*4,method="highs")
-    x_ev=rev.x; Z_ev=sum(bb[j]*x_ev[k] for k,j in enumerate(J))
+    rev=linprog([-beta_avg[j] for j in J],A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(0,None)]*4,method="highs")
+    x_ev=rev.x
+    # Z_EV: co dinh x_ev, toi uu y tung kich ban
+    Z_ev=sum(bb[j]*x_ev[k] for k,j in enumerate(J))
     for s in S:
-        cs=[-bs[(s,j)] for j in J]
-        r=linprog(cs,A_ub=[[1,1,1,1],[0,0,1,0]],b_ub=[15000,0.5*x_ev[3]],bounds=[(0,None)]*4,method="highs")
+        r=linprog([-bs[(s,j)] for j in J],A_ub=[[1,1,1,1],[0,0,1,0]],b_ub=[15000,0.5*x_ev[3]],bounds=[(0,None)]*4,method="highs")
         Z_ev+=ps[s]*(-r.fun)
-    # Wait-and-see
+
+    # ===== Wait-and-see (Z*[s] tung kich ban) =====
     det={}
     for s in S:
         cs=np.zeros(8)
@@ -1580,16 +1608,21 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     VSS=Z_sp-Z_ev; EVPI=Z_ws-Z_sp
 
     # ── 10.5.1 First-stage ──
-    st.markdown('<div class="sec-title">📌 Câu 10.5.1 — Quyết định first-stage tối ưu</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-title">📌 Câu 10.5.1 — Quyết định first-stage tối ưu (SP)</div>', unsafe_allow_html=True)
     st.success(f"**Z* Stochastic = {Z_sp:,.0f} tỷ GDP kỳ vọng**")
     st.dataframe(pd.DataFrame({"Hạng mục":["Hạ tầng (I)","CĐS (D)","AI","Nhân lực (H)"],
-                 "First-stage x* (tỷ)":x_sp.round(0),"Tỷ lệ %":(x_sp/x_sp.sum()*100).round(1)}), use_container_width=True, hide_index=True)
+                 "First-stage x* (tỷ)":x_sp.round(0),"Tỷ lệ %":(x_sp/max(x_sp.sum(),1)*100).round(1)}), use_container_width=True, hide_index=True)
     fig,(ax1,ax2)=plt.subplots(1,2,figsize=(12,4))
     ax1.bar(["I","D","AI","H"],x_sp,color=["#42a5f5","#26c6da","#ffa726","#66bb6a"],edgecolor="white")
     ax1.set_title("First-stage x* (tỷ VND)",fontweight="bold"); ax1.grid(axis="y",alpha=0.3); ax1.spines[["top","right"]].set_visible(False)
     ax2.bar(["s1 Lạc quan","s2 Cơ sở","s3 Bi quan","s4 K.hoảng"],[det[s] for s in S],color=["#1976d2","#42a5f5","#ffa726","#ef5350"],edgecolor="white")
-    ax2.set_title("Z* tối ưu theo từng kịch bản",fontweight="bold"); ax2.grid(axis="y",alpha=0.3); ax2.spines[["top","right"]].set_visible(False)
+    ax2.set_title("Z* tối ưu theo từng kịch bản (wait-and-see)",fontweight="bold"); ax2.grid(axis="y",alpha=0.3); ax2.spines[["top","right"]].set_visible(False)
     fig.tight_layout(); show_fig(fig)
+    # Bang recourse theo kich ban
+    st.markdown("**Quyết định recourse y(s) giai đoạn 2:**")
+    st.dataframe(pd.DataFrame({"Kịch bản":["s1 Lạc quan","s2 Cơ sở","s3 Bi quan","s4 Khủng hoảng"],
+                 "y_I":[y_sp[s][0].round(0) for s in S],"y_D":[y_sp[s][1].round(0) for s in S],
+                 "y_AI":[y_sp[s][2].round(0) for s in S],"y_H":[y_sp[s][3].round(0) for s in S]}), use_container_width=True, hide_index=True)
 
     # ── 10.5.2 So sánh EV vs SP ──
     st.markdown('<div class="sec-title">📌 Câu 10.5.2 — So sánh lời giải EV vs SP</div>', unsafe_allow_html=True)
@@ -1600,25 +1633,54 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     c1,c2,c3,c4=st.columns(4)
     c1.metric("Z* Stochastic (SP)",f"{Z_sp:,.0f}"); c2.metric("Z* EV",f"{Z_ev:,.0f}")
     c3.metric("VSS",f"{VSS:,.0f} tỷ"); c4.metric("EVPI",f"{EVPI:,.0f} tỷ")
-    dH=x_sp[3]-x_ev[3]
     if abs(VSS)<1:
-        vss_msg=("<b>VSS ≈ 0</b>: với cấu trúc hệ số tuyến tính này, lời giải SP và EV trùng nhau ở first-stage "
-                 "(cùng ưu tiên AI do β_AI cao nhất ở mọi kịch bản), nên việc mô hình hóa bất định "
-                 "<b>không đổi quyết định ban đầu</b> — đây cũng là một kết luận có ý nghĩa: giá trị của tư duy ngẫu nhiên "
+        vss_msg=("<b>VSS ≈ 0</b>: với cấu trúc hệ số này, lời giải SP và EV trùng nhau ở first-stage "
+                 "(cùng ưu tiên AI do β_AI cao nhất ở mọi kịch bản). Giá trị của tư duy ngẫu nhiên "
                  "nằm chủ yếu ở quyết định recourse giai đoạn 2.")
     else:
-        vss_msg=(f"<b>VSS = {VSS:,.0f} tỷ</b>: lợi ích của việc dùng mô hình ngẫu nhiên thay vì EV. "
-                 f"SP đầu tư H {'nhiều hơn' if dH>0 else 'không nhiều hơn'} EV ({x_sp[3]:,.0f} vs {x_ev[3]:,.0f} tỷ).")
+        vss_msg=(f"<b>VSS = {VSS:,.0f} tỷ</b>: lợi ích của việc dùng mô hình ngẫu nhiên thay vì lời giải kỳ vọng (EV).")
     st.markdown(f"""<div class="note-box">💡 {vss_msg}<br>
     <b>EVPI = {EVPI:,.0f} tỷ</b>: giá trị tối đa sẵn sàng trả để có thông tin hoàn hảo về kịch bản tương lai.</div>""", unsafe_allow_html=True)
+
+    # ── 10.5.4 Robust (minimax regret) ──
+    st.markdown('<div class="sec-title">📌 Câu 10.5.4 — Robust optimization (minimax regret)</div>', unsafe_allow_html=True)
+    # bien: [x(4), y_s1(4), y_s2(4), y_s3(4), y_s4(4), w] = 21 bien; min w
+    nr=4+16+1; cr=np.zeros(nr); cr[-1]=1.0
+    Ar=[]; br=[]
+    rowb=[0]*nr
+    for k in range(4): rowb[k]=1
+    Ar.append(rowb); br.append(65000)                          # budget1
+    for si in range(4):
+        row=[0]*nr
+        for k in range(4): row[4+si*4+k]=1
+        Ar.append(row); br.append(15000)                       # budget2
+    for si in range(4):
+        row=[0]*nr; row[3]=-0.5; row[4+si*4+2]=1
+        Ar.append(row); br.append(0)                           # y_AI<=0,5*x_H
+    for si,s in enumerate(S):                                  # regret: Z*[s] - z_here <= w
+        row=[0]*nr
+        for k,j in enumerate(J): row[k]=-bb[j]; row[4+si*4+k]=-bs[(s,j)]
+        row[-1]=-1.0
+        Ar.append(row); br.append(-det[s])
+    bnds_r=[(0,None)]*(4+16)+[(None,None)]
+    rr=linprog(cr,A_ub=np.array(Ar),b_ub=np.array(br),bounds=bnds_r,method="highs")
+    if rr.success:
+        x_rob=rr.x[:4]; w_rob=rr.x[-1]
+        st.dataframe(pd.DataFrame({"Hạng mục":["I","D","AI","H"],
+                     "x* Robust (minimax regret)":x_rob.round(0)}), use_container_width=True, hide_index=True)
+        st.info(f"**Minimax regret = {w_rob:,.0f} tỷ** — quyết định robust tối thiểu hóa hối tiếc lớn nhất qua mọi kịch bản.")
+    else:
+        st.warning("Không giải được mô hình robust.")
 
     # ── 10.6 Thảo luận ──
     st.markdown('<div class="sec-title">💬 10.6 — Câu hỏi thảo luận chính sách</div>', unsafe_allow_html=True)
     st.markdown(f"""<div class="info-box">
-    <b>a)</b> Quyết định first-stage tối ưu dồn ngân sách vào AI (β_AI=1,25 cao nhất ở mọi kịch bản), x_H={x_sp[3]:,.0f} tỷ. Đây là nghiệm tối ưu về toán; tuy nhiên khi x_H thấp, ràng buộc recourse y_AI ≤ 0,5·x_H bị thắt chặt, hạn chế khả năng mở rộng AI ở giai đoạn 2.<br>
-    <b>b)</b> Giá trị của tư duy ngẫu nhiên thể hiện rõ nhất ở <b>giai đoạn recourse</b>: kịch bản lạc quan/cơ sở dồn điều chỉnh vào D, còn kịch bản bi quan/khủng hoảng chuyển hướng sang H (nhân lực hấp thụ cú sốc tốt hơn, β_H tăng lên 1,10).<br>
+    <b>a)</b> Quyết định first-stage tối ưu dồn ngân sách vào AI (β_AI=1,25 cao nhất ở mọi kịch bản), x_H={x_sp[3]:,.0f} tỷ. Đây là nghiệm tối ưu về toán; khi x_H thấp, ràng buộc recourse y_AI ≤ 0,5·x_H bị thắt, hạn chế mở rộng AI ở giai đoạn 2.<br>
+    <b>b)</b> Giá trị của tư duy ngẫu nhiên thể hiện ở <b>giai đoạn recourse</b>: kịch bản lạc quan/cơ sở dồn điều chỉnh vào D, còn kịch bản bi quan/khủng hoảng chuyển hướng sang H (β_H tăng lên 1,10 vì nhân lực hấp thụ cú sốc tốt hơn).<br>
     <b>c)</b> COVID-19 và bão Yagi là cú sốc thực tế — khoản dự phòng 15.000 tỷ và năng lực nhân lực số đóng vai trò "đệm" giúp chính sách điều chỉnh linh hoạt thay vì cứng nhắc.
     </div>""", unsafe_allow_html=True)
+
+
 
 # ══════════════════════════════════════════════════
 # BÀI 11 — Q-LEARNING
