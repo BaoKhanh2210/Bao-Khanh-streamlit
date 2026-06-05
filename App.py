@@ -1407,8 +1407,8 @@ elif menu == "👷 Bài 9 — Lao động & AI":
     </ul>
     <h4>Bài toán tối ưu</h4>
     <div class="formula">max Σ NetJob(i)</div>
-    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i; <b>x_AI(i) ≥ 500 tỷ ∀i</b>
-    <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại"; sàn AI tránh nghiệm góc x_AI=0 — bảo đảm mọi ngành đều triển khai AI ở mức cơ bản)
+    <b>Ràng buộc:</b> Σ(x_AI + x_H) ≤ 30.000; NetJob(i) ≥ 0 ∀i; Displaced(i) ≤ RetrainCapacity(i) ∀i
+    <br>(nguyên tắc: "tốc độ tự động hóa không vượt quá năng lực đào tạo lại")
     </div>""", unsafe_allow_html=True)
 
     from scipy.optimize import linprog
@@ -1428,10 +1428,7 @@ elif menu == "👷 Bài 9 — Lao động & AI":
     for i in range(N): A2[i,i]=-coeff[i]; A2[i,N+i]=-b1[i]
     A3=np.zeros((N,2*N))
     for i in range(N): A3[i,i]=c1[i]*risk[i]; A3[i,N+i]=-d1[i]
-    # San dau tu AI toi thieu moi nganh (de tranh nghiem goc x_AI=0 — vo nghia chinh sach):
-    # buoc moi nganh duoc trien khai AI o muc co ban, dam bao chuyen doi cong nghe dien ra dien rong.
-    MIN_AI=500.0  # ty VND / nganh
-    bounds9=[(MIN_AI,None)]*N + [(0,None)]*N
+    bounds9=[(0,None)]*(2*N)
     res9=linprog(c_obj,A_ub=np.vstack([A1l,A2,A3]),b_ub=np.concatenate([[30000],np.zeros(N),np.zeros(N)]),bounds=bounds9,method="highs")
     if res9.success:
         xA=res9.x[:N]; xH=res9.x[N:]; NJ=coeff*xA+b1*xH
@@ -1513,7 +1510,7 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown("""<div class="model-box">
     <h4>Cấu trúc 2 giai đoạn</h4>
     <b>Giai đoạn 1 (here-and-now):</b> quyết định x = (x_I, x_D, x_AI, x_H) trước khi biết kịch bản
-    <div class="formula">Σ x(j) ≤ 65.000 (giữ 15.000 dự phòng) ; x(j) ≥ 10.000 ∀j</div>
+    <div class="formula">Σ x(j) ≤ 65.000 (giữ 15.000 dự phòng)</div>
     <b>Giai đoạn 2 (recourse):</b> điều chỉnh y(s) sau khi kịch bản s hiện thực hóa
     <div class="formula">Σ y(s,j) ≤ 15.000 ∀s ; y(AI,s) ≤ 0,5·x_H ∀s</div>
     <h4>Hàm mục tiêu</h4>
@@ -1546,9 +1543,6 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     st.markdown('<div class="sec-title">🔬 10.5 — Yêu cầu lập trình & Kết quả</div>', unsafe_allow_html=True)
 
     # Giải SP bằng scipy (đảm bảo chạy được không cần solver ngoài)
-    # San toi thieu moi hang muc first-stage de tranh nghiem goc "tat ca vao AI"
-    # (x_H=0 se vo hieu hoa ca rang buoc recourse y_AI<=0,5*x_H). San bao dam phan bo can doi.
-    MINJ=10000.0
     n=4+16; cobj=np.zeros(n)
     for k,j in enumerate(J): cobj[k]=-bb[j]
     for si,s in enumerate(S):
@@ -1562,14 +1556,14 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     for si in range(4):
         row=[0]*n; row[3]=-0.5; row[4+si*4+2]=1
         Aub.append(row); bub.append(0)
-    bounds_sp=[(MINJ,None)]*4+[(0,None)]*16
+    bounds_sp=[(0,None)]*n
     res10=linprog(cobj,A_ub=np.array(Aub),b_ub=np.array(bub),bounds=bounds_sp,method="highs")
     x_sp=res10.x[:4]; Z_sp=-res10.fun
 
     # EV deterministic
     beta_avg={j:sum(ps[s]*bs[(s,j)] for s in S) for j in J}
     cev=[-beta_avg[j] for j in J]
-    rev=linprog(cev,A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(MINJ,None)]*4,method="highs")
+    rev=linprog(cev,A_ub=[[1,1,1,1]],b_ub=[65000],bounds=[(0,None)]*4,method="highs")
     x_ev=rev.x; Z_ev=sum(bb[j]*x_ev[k] for k,j in enumerate(J))
     for s in S:
         cs=[-bs[(s,j)] for j in J]
@@ -1621,7 +1615,7 @@ elif menu == "🎲 Bài 10 — Stochastic SP":
     # ── 10.6 Thảo luận ──
     st.markdown('<div class="sec-title">💬 10.6 — Câu hỏi thảo luận chính sách</div>', unsafe_allow_html=True)
     st.markdown(f"""<div class="info-box">
-    <b>a)</b> Quyết định first-stage tối ưu ưu tiên AI (β_AI cao nhất ở mọi kịch bản); các hạng mục I, D, H giữ ở mức sàn để bảo đảm phân bổ cân đối và đủ năng lực nhân lực (x_H={x_sp[3]:,.0f} tỷ) cho recourse AI giai đoạn 2.<br>
+    <b>a)</b> Quyết định first-stage tối ưu dồn ngân sách vào AI (β_AI=1,25 cao nhất ở mọi kịch bản), x_H={x_sp[3]:,.0f} tỷ. Đây là nghiệm tối ưu về toán; tuy nhiên khi x_H thấp, ràng buộc recourse y_AI ≤ 0,5·x_H bị thắt chặt, hạn chế khả năng mở rộng AI ở giai đoạn 2.<br>
     <b>b)</b> Giá trị của tư duy ngẫu nhiên thể hiện rõ nhất ở <b>giai đoạn recourse</b>: kịch bản lạc quan/cơ sở dồn điều chỉnh vào D, còn kịch bản bi quan/khủng hoảng chuyển hướng sang H (nhân lực hấp thụ cú sốc tốt hơn, β_H tăng lên 1,10).<br>
     <b>c)</b> COVID-19 và bão Yagi là cú sốc thực tế — khoản dự phòng 15.000 tỷ và năng lực nhân lực số đóng vai trò "đệm" giúp chính sách điều chỉnh linh hoạt thay vì cứng nhắc.
     </div>""", unsafe_allow_html=True)
