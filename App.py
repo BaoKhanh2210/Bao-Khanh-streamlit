@@ -8,8 +8,8 @@ Phần "Tính toán" được trình bày chi tiết: các bước giải, bản
 diễn giải kết quả — nhằm thuyết phục người chấm.
 
 Bài tập lớn: Các mô hình ra quyết định
-Họ và tên : Trần Dương Nhi
-Mã sinh viên: ____________
+Họ và tên : Nguyễn Đình Bảo Nghĩa
+Mã sinh viên: 23052345
 
 Chạy:  streamlit run app.py
 """
@@ -1993,8 +1993,8 @@ def page_home():
     with right:
         st.markdown("#### 🧑‍🎓 Thông tin")
         st.markdown(
-            '<div class="sig"><div class="nm">Trần Dương Nhi</div>'
-            '<div class="mt">Mã sinh viên: ____________</div>'
+            '<div class="sig"><div class="nm">Nguyễn Đình Bảo Nghĩa</div>'
+            '<div class="mt">Mã sinh viên: 23052345</div>'
             '<div class="mt">Bài tập lớn: Các mô hình ra quyết định</div></div>',
             unsafe_allow_html=True)
         st.markdown("#### 🛠️ Công cụ")
@@ -2069,5 +2069,5 @@ ROUTES.get(choice_key, page_home)()
 st.markdown(
     "<hr style='border:none;border-top:1px solid #e2e8f0;margin:28px 0 8px;'>"
     "<div style='text-align:center;color:#94a3b8;font-size:.82rem;'>"
-    "AIDEOM-VN · Trần Dương Nhi · Bài tập lớn: Các mô hình ra quyết định</div>",
+    "AIDEOM-VN · Nguyễn Đình Bảo Nghĩa · Bài tập lớn: Các mô hình ra quyết định</div>",
     unsafe_allow_html=True)
