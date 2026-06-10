@@ -1943,3 +1943,4 @@ elif menu == "🧠 Bài 12 — AIDEOM tích hợp":
             ("📚 Nhân lực số đi trước","Tăng H ≥25% để hấp thụ AI, tránh thất nghiệp ròng ngành chế biến (risk=42%).","#2e7d32"),
             ("⚖️ Công bằng vùng miền","Duy trì sàn/trần ngân sách để thu hẹp khoảng cách số Tây Nguyên & Miền núi.","#e65100")]:
             st.markdown(f'<div style="border-left:4px solid {color};background:#f8fbff;border-radius:8px;padding:12px 16px;margin-bottom:8px"><div style="font-weight:700;color:{color};font-size:0.9rem">{title}</div><div style="color:#37474f;font-size:0.82rem;margin-top:3px">{desc}</div></div>', unsafe_allow_html=True)
+
